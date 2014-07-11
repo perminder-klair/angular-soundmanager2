@@ -19,7 +19,7 @@ gulp.task('scripts', function() {
     gulp.src(['./src/soundmanager2.js', './src/*.js'])
         .pipe(concat('angular-soundmanager2.js'))
         .pipe(stripDebug())
-        .pipe(uglify())
+        //.pipe(uglify())
         .pipe(gulp.dest('./dist/'));
 });
 
@@ -27,6 +27,6 @@ gulp.task('scripts', function() {
 gulp.task('default', ['scripts'], function() {
     // watch for JS changes
     gulp.watch('./src/*.js', function() {
-        gulp.run('jshint', 'scripts');
+        gulp.run('scripts');
     });
 });

@@ -13,7 +13,7 @@ angular.module('angularSoundManager', [])
         };
     })
 
-    .factory('player', [ '$rootScope', '$window', function ($rootScope) {
+    .factory('player', [ '$rootScope', function ($rootScope) {
 
         var currentTrack = null,
             repeat = false,
@@ -35,7 +35,9 @@ angular.module('angularSoundManager', [])
                     preferFlash: false, // prefer 100% HTML5 mode, where both supported
                     debugMode: false, // enable debugging output (console.log() with HTML fallback)
                     useHTML5Audio: true,
-                    onready: null,
+                    onready: function () {
+                        //console.log('sound manager ready!');
+                    },
                     ontimeout: function () {
                         alert('SM2 failed to start. Flash missing, blocked or security error?');
                         alert('The status is ' + status.success + ', the error type is ' + status.error.type);
@@ -342,7 +344,7 @@ angular.module('angularSoundManager', [])
         };
     }])
 
-    .directive('soundManager', function ($filter, player) {
+    .directive('soundManager', ['$filter', 'player', function ($filter, player) {
         return {
             restrict: "E",
             link: function (scope, element, attrs) {
@@ -376,8 +378,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    })
-    .directive('musicPlayer', function (player) {
+    }])
+    .directive('musicPlayer', ['player', function (player) {
         return {
             restrict: "EA",
             scope: {
@@ -414,8 +416,8 @@ angular.module('angularSoundManager', [])
                 });
             }
         };
-    })
-    .directive('playFromPlaylist', function (player) {
+    }])
+    .directive('playFromPlaylist', ['player', function (player) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -427,8 +429,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    })
-    .directive('removeFromPlaylist', function (player) {
+    }])
+    .directive('removeFromPlaylist', ['player', function (player) {
         return {
             restrict: "EA",
             scope: {
@@ -446,8 +448,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    })
-    .directive('seekTrack', function (player) {
+    }])
+    .directive('seekTrack', ['player', function (player) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -469,8 +471,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    })
-    .directive('playMusic', function (player) {
+    }])
+    .directive('playMusic', ['player', function (player) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -481,8 +483,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    })
-    .directive('pauseMusic', function (player) {
+    }])
+    .directive('pauseMusic', ['player', function (player) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -493,8 +495,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    })
-    .directive('stopMusic', function (player) {
+    }])
+    .directive('stopMusic', ['player', function (player) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -505,8 +507,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    })
-    .directive('nextTrack', function (player) {
+    }])
+    .directive('nextTrack', ['player', function (player) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -517,8 +519,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    })
-    .directive('prevTrack', function (player) {
+    }])
+    .directive('prevTrack', ['player', function (player) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -529,8 +531,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    })
-    .directive('muteMusic', function (player) {
+    }])
+    .directive('muteMusic', ['player', function (player) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -548,8 +550,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    })
-    .directive('repeatMusic', function (player) {
+    }])
+    .directive('repeatMusic', ['player', function (player) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -566,8 +568,8 @@ angular.module('angularSoundManager', [])
                 });
             }
         };
-    })
-    .directive('musicVolume', function (player) {
+    }])
+    .directive('musicVolume', ['player', function (player) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -589,8 +591,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    })
-    .directive('setPlaylist', function (player) {
+    }])
+    .directive('setPlaylist', ['player', function (player) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -604,8 +606,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    })
-    .directive('clearPlaylist', function (player) {
+    }])
+    .directive('clearPlaylist', ['player', function (player) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -619,8 +621,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    })
-    .directive('playAll', function (player) {
+    }])
+    .directive('playAll', ['player', function (player) {
         return {
             restrict: "EA",
             scope: {
@@ -653,4 +655,4 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    });
+    }]);

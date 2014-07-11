@@ -1,6 +1,6 @@
 angular.module('myApp', ['angularSoundManager'])
 
-    .controller('MainCtrl', ['$scope', 'player', function ($scope) {
+    .controller('MainCtrl', ['$scope', function ($scope) {
         $scope.songs = [
             {
                 id: 'one',
