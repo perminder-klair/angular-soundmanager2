@@ -1,4 +1,4 @@
-# AnguarJs Music Player using SoundManager2 API
+# AngularJs Music Player
 
 A music player made with SoundManager 2 API for AngularJs to play music files.
 
@@ -27,8 +27,7 @@ dist/angular-soundmanager2.js
 3. That's it -- you're done!
 
 
-## Example
-
+### Example
 Take a look at files under `examples` directory for how to create player using AngularJs directives.
 
 
@@ -45,7 +44,7 @@ Take a look at files under `examples` directory for how to create player using A
 ## Why I created this
 There are a couple projects similar to this out there, but none were ideal for me and none of them was using awesome API of SoundManager2.
 
-Feel free to fork this project and amend it according to your needs. This is just the start point!
+Feel free to fork this project and amend it according to your needs. This is just an start point!
 
 ## Credits:
 Credit goes to [Scott Schiller](https://github.com/scottschiller) for his excellent [SoundManager2](https://github.com/scottschiller/SoundManager2).
