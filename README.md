@@ -1,6 +1,7 @@
 # Music Player
 
 A music player made with SoundManager 2 API for AngularJs to play music files.
+
 SoundManager 2 brings reliable cross-platform audio to JavaScript.
 
 **Requirements:** AngularJS 1.2+
@@ -14,6 +15,10 @@ SoundManager 2 brings reliable cross-platform audio to JavaScript.
     ```
 
 3. That's it -- you're done!
+
+## Example
+
+Take a look at files under `examples` directory for how to create player using AngularJs directives.
 
 #### via bower:
 ```
