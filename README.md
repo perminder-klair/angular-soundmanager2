@@ -1,4 +1,4 @@
-# Music Player
+# AnguarJs Music Player using SoundManager2 API
 
 A music player made with SoundManager 2 API for AngularJs to play music files.
 
