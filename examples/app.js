@@ -4,28 +4,28 @@ angular.module('myApp', ['angularSoundManager'])
         $scope.songs = [
             {
                 id: 'one',
-                title: 'Leh',
-                url: 'http://cdn11.imp3songs.com/files/superwoman/leh-feat-humble-the-poet/128/01-leh-feat-humble-the-poet.mp3'
+                title: 'Rain',
+                url: 'http://www.schillmania.com/projects/soundmanager2/demo/_mp3/rain.mp3'
             },
             {
                 id: 'two',
-                title: 'Delete',
-                url: 'http://cdn11.imp3songs.com/files/gagan-kokri/delete/128/01-delete.mp3'
+                title: 'Walking',
+                url: 'http://www.schillmania.com/projects/soundmanager2/demo/_mp3/walking.mp3'
             },
             {
                 id: 'three',
-                title: 'Police (Feat. Deep Jandu)',
-                url: 'http://cdn11.imp3songs.com/files/blizzy/police-feat-deep-jandu/128/01-police-feat-deep-jandu.mp3'
+                title: 'Barrlping with Carl (featureblend.com)',
+                url: 'http://www.freshly-ground.com/misc/music/carl-3-barlp.mp3'
             },
             {
                 id: 'four',
-                title: 'Life Of Villager',
-                url: 'http://cdn11.imp3songs.com/files/aman-dhillon/life-of-villager-duniyadari/128/01-life-of-villager-duniyadari.mp3'
+                title: 'Angry cow sound?',
+                url: 'http://www.freshly-ground.com/data/audio/binaural/Mak.mp3'
             },
             {
                 id: 'five',
-                title: 'Dil Cherdi',
-                url: 'http://cdn11.imp3songs.com/files/jay-status/dil-cherdi/128/01-dil-cherdi.mp3'
+                title: 'Things that open, close and roll',
+                url: 'http://www.freshly-ground.com/data/audio/binaural/Things%20that%20open,%20close%20and%20roll.mp3'
             }
         ];
 
