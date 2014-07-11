@@ -22,7 +22,7 @@ Take a look at files under `examples` directory for how to create player using A
 
 #### via bower:
 ```
-bower install angular-soundmanger2
+bower install angular-soundmanager2
 ```
 
 ## HTML5 Audio() Support
