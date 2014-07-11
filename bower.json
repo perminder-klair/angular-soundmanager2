@@ -1,0 +1,26 @@
+{
+    "name": "angular-soundmanger2",
+    "version": "0.1.1",
+    "authors": [
+        "Parminder Klair"
+    ],
+    "description": "SoundManager2 Music Player for AngularJs",
+    "main": "src/angular-soundmanager2.js",
+    "keywords": [
+        "angular",
+        "angularjs",
+        "soundmanager2",
+        "music",
+        "player",
+        "music player"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/perminder-klair/angular-soundmanager2",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ]
+}
