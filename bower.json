@@ -5,7 +5,7 @@
         "Parminder Klair"
     ],
     "description": "SoundManager2 Music Player for AngularJs",
-    "main": "src/angular-soundmanager2.js",
+    "main": "dist/angular-soundmanager2.js",
     "keywords": [
         "angular",
         "angularjs",
