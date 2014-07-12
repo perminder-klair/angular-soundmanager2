@@ -28,5 +28,4 @@ angular.module('myApp', ['angularSoundManager'])
                 url: 'http://www.freshly-ground.com/data/audio/binaural/Things%20that%20open,%20close%20and%20roll.mp3'
             }
         ];
-
     }]);
