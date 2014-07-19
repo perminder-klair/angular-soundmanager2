@@ -105,7 +105,9 @@ angular.module('angularSoundManager', [])
                     console.log('song manager ready!');
                     // Ready to use; soundManager.createSound() etc. can now be called.
                     var isSupported = soundManager.ok();
-                    console.log(isSupported);
+                    console.log('is supported: ' + isSupported);
+
+                    $rootScope.$broadcast('angularPlayer:ready', true);
                 });
             },
             isInArray: function (array, value) {
