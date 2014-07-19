@@ -6096,6 +6096,8 @@ angular.module('angularSoundManager', [])
                     // Ready to use; soundManager.createSound() etc. can now be called.
                     var isSupported = soundManager.ok();
                     void 0;
+
+                    $rootScope.$broadcast('angularPlayer:ready', true);
                 });
             },
             isInArray: function (array, value) {
@@ -6475,7 +6477,7 @@ angular.module('angularSoundManager', [])
 
                     var sound = soundManager.getSoundById(angularPlayer.getCurrentTrack());
 
-                    var x = event.x - element[0].offsetLeft,
+                    var x = event.offsetX,
                         width = element[0].clientWidth,
                         duration = sound.durationEstimate;
 
