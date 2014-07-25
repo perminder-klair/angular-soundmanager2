@@ -18,8 +18,9 @@ gulp.task('jshint', function() {
 gulp.task('scripts', function() {
     gulp.src(['./src/soundmanager2.js', './src/*.js'])
         .pipe(concat('angular-soundmanager2.js'))
-        .pipe(stripDebug())
+        //.pipe(stripDebug())
         //.pipe(uglify())
+        .pipe(gulp.dest('./examples/'))
         .pipe(gulp.dest('./dist/'));
 });
 

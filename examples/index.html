@@ -18,16 +18,12 @@
             <h5>Songs</h5>
             <ul>
                 <li ng-repeat="song in songs">
-                    <button music-player data-type="playTrack" data-song="{{ $index }}" all-songs="songs"
-                            my-playlist="playlist">{{ song.title }}
-                    </button>
-                    <button music-player data-type="addToPlaylist" data-song="{{ $index }}" all-songs="songs"
-                            my-playlist="playlist">+
-                    </button>
+                    <button music-player="play" add-song="song">{{ song.title }}</button>
+                    <button music-player add-song="song">+</button>
                 </li>
             </ul>
 
-            <button play-all="songs" my-playlist="playlist">Play all</button>
+            <button play-all="songs">Play all</button>
 
         </div>
     </div>
@@ -75,15 +71,14 @@
             <br/>
             <br/>
             <h5>Playlist</h5>
-            <ul set-playlist>
+            <ul>
                 <li ng-repeat="song in playlist">
-                    <a play-from-playlist data-song="{{song.id}}">{{ song.title }}</a>
+                    <a play-from-playlist="song">{{ song.title }}</a>
                     -
-                    <a remove-from-playlist data-song="{{song.id}}" data-index="{{$index}}" my-playlist="playlist">
+                    <a remove-from-playlist="song" data-index="{{$index}}">
                         <small>(remove)</small>
                     </a>
-                    -
-                    <span ng-if="currentPlaying.id == song.id">(current)</span>
+                    <span ng-if="currentPlaying.id == song.id"> - (current)</span>
                 </li>
             </ul>
         </div>
