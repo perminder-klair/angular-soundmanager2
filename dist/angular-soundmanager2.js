@@ -99,7 +99,7 @@ function SoundManager(smURL, smID) {
     'whileplaying': null,     // callback during play (position update)
     'onposition': null,       // object containing times and function callbacks for positions of interest
     'onstop': null,           // callback for "user stop"
-    'onfailure': null,        // callback function for when playing fails
+    'onfailure': 'nextTrack', // callback function for when playing fails
     'onfinish': null,         // callback function for "sound finished playing"
     'multiShot': true,        // let sounds "restart" or layer on top of each other when played multiple times, rather than one-shot/one at a time
     'multiShotEvents': false, // fire multiple sound events (currently onfinish() only) when multiShot is enabled
@@ -107,7 +107,7 @@ function SoundManager(smURL, smID) {
     'pan': 0,                 // "pan" settings, left-to-right, -100 to 100
     'stream': true,           // allows playing before entire file has loaded (recommended)
     'to': null,               // position to end playback within a sound (msec), default = end
-    'type': null,             // MIME-like hint for file pattern / canPlay() tests, eg. audio/mp3
+    'type': 'audio/mp3',      // MIME-like hint for file pattern / canPlay() tests, eg. audio/mp3
     'usePolicyFile': false,   // enable crossdomain.xml request for audio on remote domains (for ID3/waveform access)
     'volume': 100             // self-explanatory. 0-100, the latter being the max.
 
@@ -4051,7 +4051,7 @@ function SoundManager(smURL, smID) {
     }
 
     var url = (o.url || null),
-        mime = (o.type || null),
+        mime = (o.type || sm2.defaultOptions.type || null),
         aF = sm2.audioFormats,
         result,
         offset,
