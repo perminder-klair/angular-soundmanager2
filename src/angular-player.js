@@ -88,8 +88,8 @@ angular.module('angularSoundManager', [])
                             soundManager._writeDebug(this.id + ' finished playing');
                             if (autoPlay === true) {
                                 //play next track if autoplay is on
-                                //get your angular element
-                                var elem = angular.element(document.querySelector('[ng-controller]'));
+                                //get your angular app
+                                var elem = angular.element(document.querySelector('[ng-app]'));
                                 //get the injector.
                                 var injector = elem.injector();
                                 //get the service.
@@ -293,7 +293,7 @@ angular.module('angularSoundManager', [])
             },
             mute: function () {
                 if (soundManager.muted === true) {
-                    soundManager.unmute()
+                    soundManager.unmute();
                 } else {
                     soundManager.mute();
                 }
@@ -485,7 +485,16 @@ angular.module('angularSoundManager', [])
 
                     var sound = soundManager.getSoundById(angularPlayer.getCurrentTrack());
 
-                    var x = event.offsetX,
+                    var getXOffset = function (event) {
+                      var x = 0, element = event.target;
+                      while (element && !isNaN(element.offsetLeft) && !isNaN(element.offsetTop)) {
+                        x += element.offsetLeft - element.scrollLeft;
+                        element = element.offsetParent;
+                      }
+                      return event.clientX - x;
+                    };
+
+                    var x = event.offsetX || getXOffset(event),
                         width = element[0].clientWidth,
                         duration = sound.durationEstimate;
 
