@@ -6078,8 +6078,8 @@ angular.module('angularSoundManager', [])
                             soundManager._writeDebug(this.id + ' finished playing');
                             if (autoPlay === true) {
                                 //play next track if autoplay is on
-                                //get your angular element
-                                var elem = angular.element(document.querySelector('[ng-controller]'));
+                                //get your angular app
+                                var elem = angular.element(document.querySelector('[ng-app]'));
                                 //get the injector.
                                 var injector = elem.injector();
                                 //get the service.
@@ -6283,7 +6283,7 @@ angular.module('angularSoundManager', [])
             },
             mute: function () {
                 if (soundManager.muted === true) {
-                    soundManager.unmute()
+                    soundManager.unmute();
                 } else {
                     soundManager.mute();
                 }
