@@ -8,7 +8,7 @@ module.exports = function(grunt) {
 			},
 			dist: {
 				src: [
-                    'src/modules/00-soundmanager2.js', 
+                    'src/modules/soundmanager2.js', 
                     'src/01-app.js',
                     'src/02-filter-humanTime.js',
                     'src/03-factory-angularPlayer.js',
