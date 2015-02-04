@@ -30,6 +30,7 @@ That's it -- you're done!
 
 
 ### Example demo
+
 Take a look at files under `examples` directory for demo and how to create player using AngularJs directives.
 
 [Live demo](http://perminder-klair.github.io/angular-soundmanager2/)
@@ -46,9 +47,20 @@ Take a look at files under `examples` directory for demo and how to create playe
     * See "useHTML5Audio" property for implementation details
 
 ## Why I created this
+
 There are a couple projects similar to this out there, but none were ideal for me and none of them was using awesome API of SoundManager2.
 
 Feel free to fork this project and amend it according to your needs. This is just an start point!
+
+## Development
+
+Install dependencies
+
+`npm install`
+
+Run grunt to watch files to update `dist`
+
+`grunt`
 
 ## Credits:
 Credit goes to [Scott Schiller](https://github.com/scottschiller) for his excellent [SoundManager2](https://github.com/scottschiller/SoundManager2).

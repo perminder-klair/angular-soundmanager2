@@ -1,0 +1,1 @@
+var ngSoundManager = angular.module('angularSoundManager', []);

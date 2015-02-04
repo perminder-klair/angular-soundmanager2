@@ -1,6 +1,6 @@
 {
     "name": "angular-soundmanager2",
-    "version": "0.2.3",
+    "version": "0.5.1",
     "description": "SoundManager2 Music Player for AngularJs",
     "main": "src/angular-soundmanager2.js",
     "directories": {
@@ -27,10 +27,10 @@
     },
     "homepage": "https://github.com/perminder-klair/angular-soundmanager2",
     "devDependencies": {
-        "gulp": "^3.8.6",
-        "gulp-concat": "^2.3.3",
-        "gulp-jshint": "^1.7.1",
-        "gulp-strip-debug": "^0.3.0",
-        "gulp-uglify": "^0.3.1"
+       "grunt": "~0.4.5",
+       "grunt-contrib-jshint":  "~0.10.0",
+       "grunt-contrib-concat":  "~0.5.0",
+       "grunt-contrib-uglify":  "~0.7.0",
+       "grunt-contrib-watch":   "~0.6.1"
     }
 }

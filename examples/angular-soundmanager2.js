@@ -8,10 +8,10 @@
  * Code provided under the BSD License:
  * http://schillmania.com/projects/soundmanager2/license.txt
  *
- * V2.97a.20131201
+ * V2.97a.20140901
  */
 
-/*global window, SM2_DEFER, sm2Debugger, console, document, navigator, setTimeout, setInterval, clearInterval, Audio, opera */
+/*global window, SM2_DEFER, sm2Debugger, console, document, navigator, setTimeout, setInterval, clearInterval, Audio, opera, module, define */
 /*jslint regexp: true, sloppy: true, white: true, nomen: true, plusplus: true, todo: true */
 
 /**
@@ -33,6 +33,15 @@
 (function(window, _undefined) {
 
 "use strict";
+
+if (!window || !window.document) {
+
+  // Don't cross the [environment] streams. SM2 expects to be running in a browser, not under node.js etc.
+  // Additionally, if a browser somehow manages to fail this test, as Egon said: "It would be bad."
+
+  throw new Error('SoundManager requires a browser with window and document objects.');
+
+}
 
 var soundManager = null;
 
@@ -189,7 +198,7 @@ function SoundManager(smURL, smID) {
 
   // dynamic attributes
 
-  this.versionNumber = 'V2.97a.20131201';
+  this.versionNumber = 'V2.97a.20140901';
   this.version = null;
   this.movieURL = null;
   this.altURL = null;
@@ -1635,6 +1644,11 @@ function SoundManager(smURL, smID) {
         try {
           s.isHTML5 = false;
           s._iO = policyFix(loopFix(instanceOptions));
+          // if we have "position", disable auto-play as we'll be seeking to that position at onload().
+          if (s._iO.autoPlay && (s._iO.position || s._iO.from)) {
+            sm2._wD(s.id + ': Disabling autoPlay because of non-zero offset case');
+            s._iO.autoPlay = false;
+          }
           // re-assign local shortcut
           instanceOptions = s._iO;
           if (fV === 8) {
@@ -1909,12 +1923,15 @@ function SoundManager(smURL, smID) {
 
         s._iO = mixin(oOptions, s._iO);
 
-        // apply from/to parameters, if they exist (and not using RTMP)
-        if (s._iO.from !== null && s._iO.to !== null && s.instanceCount === 0 && s.playState === 0 && !s._iO.serverURL) {
+        /**
+         * Preload in the event of play() with position under Flash,
+         * or from/to parameters and non-RTMP case
+         */
+        if (((!s.isHTML5 && s._iO.position !== null && s._iO.position > 0) || (s._iO.from !== null && s._iO.from > 0) || s._iO.to !== null) && s.instanceCount === 0 && s.playState === 0 && !s._iO.serverURL) {
 
           onready = function() {
             // sound "canplay" or onload()
-            // re-apply from/to to instance options, and start playback
+            // re-apply position/from/to to instance options, and start playback
             s._iO = mixin(oOptions, s._iO);
             s.play(s._iO);
           };
@@ -1923,7 +1940,7 @@ function SoundManager(smURL, smID) {
           if (s.isHTML5 && !s._html5_canplay) {
 
             // this hasn't been loaded yet. load it first, and then do this again.
-            sm2._wD(fN + 'Beginning load for from/to case');
+            sm2._wD(fN + 'Beginning load for non-zero offset case');
 
             s.load({
               // note: custom HTML5-only event added for from/to implementation.
@@ -1936,7 +1953,7 @@ function SoundManager(smURL, smID) {
 
             // to be safe, preload the whole thing in Flash.
 
-            sm2._wD(fN + 'Preloading for from/to case');
+            sm2._wD(fN + 'Preloading for non-zero offset case');
 
             s.load({
               onload: onready
@@ -3097,7 +3114,7 @@ function SoundManager(smURL, smID) {
       s.isBuffering = (nIsBuffering === 1);
       if (s._iO.onbufferchange) {
         sm2._wD(s.id + ': Buffer state change: ' + nIsBuffering);
-        s._iO.onbufferchange.apply(s);
+        s._iO.onbufferchange.apply(s, [nIsBuffering]);
       }
 
       return true;
@@ -3128,12 +3145,25 @@ function SoundManager(smURL, smID) {
     this._onfailure = function(msg, level, code) {
 
       s.failures++;
-      sm2._wD(s.id + ': Failures = ' + s.failures);
+      sm2._wD(s.id + ': Failure (' + s.failures + '): ' + msg);
 
       if (s._iO.onfailure && s.failures === 1) {
-        s._iO.onfailure(s, msg, level, code);
+        s._iO.onfailure(msg, level, code);
       } else {
         sm2._wD(s.id + ': Ignoring failure');
+      }
+
+    };
+
+    /**
+     * flash 9/movieStar + RTMP-only method for unhandled warnings/exceptions from Flash
+     * e.g., RTMP "method missing" warning (non-fatal) for getStreamLength on server
+     */
+
+    this._onwarning = function(msg, level, code) {
+
+      if (s._iO.onwarning) {
+        s._iO.onwarning(msg, level, code);
       }
 
     };
@@ -3323,8 +3353,10 @@ function SoundManager(smURL, smID) {
       }
       s.metadata = oData;
 
+console.log('updated metadata', s.metadata);
+
       if (s._iO.onmetadata) {
-        s._iO.onmetadata.apply(s);
+        s._iO.onmetadata.call(s, s.metadata);
       }
 
     };
@@ -3752,10 +3784,10 @@ function SoundManager(smURL, smID) {
       s._onbufferchange(0);
 
       // position according to instance options
-      position1K = (s._iO.position !== _undefined && !isNaN(s._iO.position)?s._iO.position/msecScale:null);
+      position1K = (s._iO.position !== _undefined && !isNaN(s._iO.position) ? s._iO.position/msecScale : null);
 
-      // set the position if position was set before the sound loaded
-      if (s.position && this.currentTime !== position1K) {
+      // set the position if position was provided before the sound loaded
+      if (this.currentTime !== position1K) {
         sm2._wD(s.id + ': canplay: Setting position to ' + position1K);
         try {
           this.currentTime = position1K;
@@ -3779,6 +3811,25 @@ function SoundManager(smURL, smID) {
         s._onbufferchange(0);
         s._whileloading(s.bytesLoaded, s.bytesTotal, s._get_html5_duration());
         s._onload(true);
+      }
+
+    }),
+
+    durationchange: html5_event(function() {
+
+      // durationchange may fire at various times, probably the safest way to capture accurate/final duration.
+
+      var s = this._s,
+          duration;
+
+      duration = s._get_html5_duration();
+
+      if (!isNaN(duration) && duration !== s.duration) {
+
+        sm2._wD(this._s.id + ': durationchange (' + duration + ')' + (s.duration ? ', previously ' + s.duration : ''));
+
+        s.durationEstimate = s.duration = duration;
+
       }
 
     }),
@@ -3855,7 +3906,7 @@ function SoundManager(smURL, smID) {
 
     playing: html5_event(function() {
 
-      sm2._wD(this._s.id + ': playing');
+      sm2._wD(this._s.id + ': playing ' + String.fromCharCode(9835));
       // once play starts, no buffering
       this._s._onbufferchange(0);
 
@@ -3915,8 +3966,6 @@ function SoundManager(smURL, smID) {
 
       if (!isNaN(loaded)) {
 
-        // if progress, likely not buffering
-        s._onbufferchange(0);
         // TODO: prevent calls with duplicate values.
         s._whileloading(loaded, total, s._get_html5_duration());
         if (loaded && total && loaded === total) {
@@ -4259,7 +4308,7 @@ function SoundManager(smURL, smID) {
     setupUndef: sm + '.setup(): Could not find option "%s"',
     setupLate: sm + '.setup(): url, flashVersion and html5Test property changes will not take effect until reboot().',
     noURL: smc + 'Flash URL required. Call soundManager.setup({url:...}) to get started.',
-    sm2Loaded: 'SoundManager 2: Ready.',
+    sm2Loaded: 'SoundManager 2: Ready. ' + String.fromCharCode(10003),
     reset: sm + '.reset(): Removing event callbacks',
     mobileUA: 'Mobile UA detected, preferring HTML5 by default.',
     globalHTML5: 'Using singleton HTML5 Audio() pattern for this device.'
@@ -4771,13 +4820,13 @@ function SoundManager(smURL, smID) {
 
   };
 
-  featureCheck = function() {
+featureCheck = function() {
 
     var flashNeeded,
         item,
         formats = sm2.audioFormats,
         // iPhone <= 3.1 has broken HTML5 audio(), but firmware 3.2 (original iPad) + iOS4 works.
-        isSpecial = (is_iDevice && !!(ua.match(/os (1|2|3_0|3_1)/i)));
+        isSpecial = (is_iDevice && !!(ua.match(/os (1|2|3_0|3_1)\s/i)));
 
     if (isSpecial) {
 
@@ -5215,7 +5264,7 @@ function SoundManager(smURL, smID) {
        * does not apply when using high performance (position:fixed means on-screen), OR infinite flash load timeout
        * wmode breaks IE 8 on Vista + Win7 too in some cases, as of January 2011 (?)
        */
-       messages.push(strings.spcWmode);
+      messages.push(strings.spcWmode);
       sm2.wmode = null;
     }
 
@@ -5655,7 +5704,7 @@ function SoundManager(smURL, smID) {
 
     if (sm2.html5Only) {
       // all good.
-      _wDS('sm2Loaded');
+      _wDS('sm2Loaded', 1);
       didInit = true;
       initUserOnload();
       debugTS('onload', true);
@@ -5672,7 +5721,7 @@ function SoundManager(smURL, smID) {
 
     error = {type: (!hasFlash && needsFlash ? 'NO_FLASH' : 'INIT_TIMEOUT')};
 
-    sm2._wD('SoundManager 2 ' + (disabled ? 'failed to load' : 'loaded') + ' (' + (disabled ? 'Flash security/load error' : 'OK') + ')', disabled ? 2: 1);
+    sm2._wD('SoundManager 2 ' + (disabled ? 'failed to load' : 'loaded') + ' (' + (disabled ? 'Flash security/load error' : 'OK') + ') ' + String.fromCharCode(disabled ? 10006 : 10003), disabled ? 2: 1);
 
     if (disabled || bNoDisable) {
       if (sm2.useFlashBlock && sm2.oMC) {
@@ -5904,6 +5953,10 @@ function SoundManager(smURL, smID) {
 
     // catch edge case of initComplete() firing after window.load()
     windowLoaded = true;
+
+    // catch case where DOMContentLoaded has been sent, but we're still in doc.readyState = 'interactive'
+    domContentLoaded();
+
     event.remove(window, 'load', winOnLoad);
 
   };
@@ -5983,14 +6036,43 @@ if (window.SM2_DEFER === undefined || !SM2_DEFER) {
  * ------------------------------
  */
 
-window.SoundManager = SoundManager; // constructor
-window.soundManager = soundManager; // public API, flash callbacks etc.
+if (typeof module === 'object' && module && typeof module.exports === 'object') {
+
+  /**
+   * commonJS module
+   * note: SM2 requires a window global due to Flash, which makes calls to window.soundManager.
+   * flash may not always be needed, but this is not known until async init and SM2 may even "reboot" into Flash mode.
+   */
+
+  window.soundManager = soundManager;
+
+  module.exports.SoundManager = SoundManager;
+  module.exports.soundManager = soundManager;
+
+} else if (typeof define === 'function' && define.amd) {
+
+  // AMD - requireJS
+
+  define('SoundManager', [], function() {
+    return {
+      SoundManager: SoundManager,
+      soundManager: soundManager
+    };
+  });
+
+} else {
+
+  // standard browser case
+
+  window.SoundManager = SoundManager; // constructor
+  window.soundManager = soundManager; // public API, flash callbacks etc.
+
+}
 
 }(window));
 
-angular.module('angularSoundManager', [])
-
-    .filter('humanTime', function () {
+var ngSoundManager = angular.module('angularSoundManager', []);
+ngSoundManager.filter('humanTime', function () {
         return function (input) {
             function pad(d) {
                 return (d < 10) ? '0' + d.toString() : d.toString();
@@ -6001,10 +6083,9 @@ angular.module('angularSoundManager', [])
 
             return pad(min) + ':' + pad(sec);
         };
-    })
-
-    .factory('angularPlayer', [ '$rootScope', function ($rootScope) {
-
+    });
+ngSoundManager.factory('angularPlayer', ['$rootScope',
+    function($rootScope) {
         var currentTrack = null,
             repeat = false,
             autoPlay = true,
@@ -6012,24 +6093,21 @@ angular.module('angularSoundManager', [])
             volume = 90,
             trackProgress = 0,
             playlist = [];
-
         return {
-            init: function () {
-
-                if (typeof soundManager === 'undefined') {
+            init: function() {
+                if(typeof soundManager === 'undefined') {
                     alert('Please include SoundManager2 Library!');
                 }
-
                 soundManager.setup({
                     //url: '/path/to/swfs/',
                     //flashVersion: 9,
                     preferFlash: false, // prefer 100% HTML5 mode, where both supported
                     debugMode: false, // enable debugging output (console.log() with HTML fallback)
                     useHTML5Audio: true,
-                    onready: function () {
+                    onready: function() {
                         //console.log('sound manager ready!');
                     },
-                    ontimeout: function () {
+                    ontimeout: function() {
                         alert('SM2 failed to start. Flash missing, blocked or security error?');
                         alert('The status is ' + status.success + ', the error type is ' + status.error.type);
                     },
@@ -6044,6 +6122,7 @@ angular.module('angularSoundManager', [])
                         onid3: null, // callback function for "ID3 data is added/available"
                         onload: null, // callback function for "load finished"
                         onstop: null, // callback for "user stop"
+                        onfailure: 'nextTrack', // callback function for when playing fails
                         onpause: null, // callback for "pause"
                         onplay: null, // callback for "play" start
                         onresume: null, // callback for "resume" (pause toggle)
@@ -6051,32 +6130,28 @@ angular.module('angularSoundManager', [])
                         pan: 0, // "pan" settings, left-to-right, -100 to 100
                         stream: true, // allows playing before entire file has loaded (recommended)
                         to: null, // position to end playback within a sound (msec), see demo
-                        type: null, // MIME-like hint for canPlay() tests, eg. 'audio/mp3'
+                        type: 'audio/mp3', // MIME-like hint for canPlay() tests, eg. 'audio/mp3'
                         usePolicyFile: false, // enable crossdomain.xml request for remote domains (for ID3/waveform access)
                         volume: volume, // self-explanatory. 0-100, the latter being the max.
-                        whileloading: function () {
+                        whileloading: function() {
                             //soundManager._writeDebug('sound '+this.id+' loading, '+this.bytesLoaded+' of '+this.bytesTotal);
                         },
-                        whileplaying: function () {
+                        whileplaying: function() {
                             //soundManager._writeDebug('sound '+this.id+' playing, '+this.position+' of '+this.duration);
-
                             //broadcast current playing track id
                             currentTrack = this.id;
                             //$rootScope.$broadcast('track:id', this.id);
-
                             //broadcast current playing track progress
                             trackProgress = ((this.position / this.duration) * 100);
                             $rootScope.$broadcast('track:progress', trackProgress);
-
                             //broadcast track position
                             $rootScope.$broadcast('currentTrack:position', this.position);
-
                             //broadcast track duration
                             $rootScope.$broadcast('currentTrack:duration', this.duration);
                         },
-                        onfinish: function () {
+                        onfinish: function() {
                             soundManager._writeDebug(this.id + ' finished playing');
-                            if (autoPlay === true) {
+                            if(autoPlay === true) {
                                 //play next track if autoplay is on
                                 //get your angular app
                                 var elem = angular.element(document.querySelector('[ng-app]'));
@@ -6085,358 +6160,322 @@ angular.module('angularSoundManager', [])
                                 //get the service.
                                 var angularPlayer = injector.get('angularPlayer');
                                 angularPlayer.nextTrack();
-
                                 $rootScope.$broadcast('track:id', currentTrack);
                             }
                         }
                     }
                 });
-                soundManager.onready(function () {
+                soundManager.onready(function() {
                     console.log('song manager ready!');
                     // Ready to use; soundManager.createSound() etc. can now be called.
                     var isSupported = soundManager.ok();
                     console.log('is supported: ' + isSupported);
-
                     $rootScope.$broadcast('angularPlayer:ready', true);
                 });
             },
-            isInArray: function (array, value) {
-                for (var i = 0; i < array.length; i++) {
-                    if (array[i].id === value) {
+            isInArray: function(array, value) {
+                for(var i = 0; i < array.length; i++) {
+                    if(array[i].id === value) {
                         return i;
                     }
                 }
-
                 return false;
             },
-            getIndexByValue: function (array, value) {
-                for (var i = 0; i < array.length; i++) {
-                    if (array[i] === value) {
+            getIndexByValue: function(array, value) {
+                for(var i = 0; i < array.length; i++) {
+                    if(array[i] === value) {
                         return i;
                     }
                 }
-
                 return false;
             },
-            asyncLoop: function (o) {
+            asyncLoop: function(o) {
                 var i = -1;
-
-                var loop = function () {
+                var loop = function() {
                     i++;
-                    if (i == o.length) {
+                    if(i == o.length) {
                         o.callback();
                         return;
                     }
                     o.functionToLoop(loop, i);
                 };
-                loop();//init
+                loop(); //init
             },
-            setCurrentTrack: function (key) {
+            setCurrentTrack: function(key) {
                 currentTrack = key;
             },
-            getCurrentTrack: function () {
+            getCurrentTrack: function() {
                 return currentTrack;
             },
-            currentTrackData: function () {
+            currentTrackData: function() {
                 var trackId = this.getCurrentTrack();
                 var currentKey = this.isInArray(playlist, trackId);
                 return playlist[currentKey];
             },
-            getPlaylist: function (key) {
-                if (typeof key === 'undefined') {
+            getPlaylist: function(key) {
+                if(typeof key === 'undefined') {
                     return playlist;
                 } else {
                     return playlist[key];
                 }
             },
-            addToPlaylist: function (track) {
+            addToPlaylist: function(track) {
                 playlist.push(track);
-                
                 //broadcast playlist
                 $rootScope.$broadcast('player:playlist', playlist);
             },
-            addTrack: function (track) {
+            addTrack: function(track) {
                 //check if url is playable
-                if (soundManager.canPlayURL(track.url) !== true) {
+                if(soundManager.canPlayURL(track.url) !== true) {
                     console.log('invalid song url');
                     return null;
                 }
-
                 //check if song already does not exists then add to playlist
                 var inArrayKey = this.isInArray(this.getPlaylist(), track.id);
-                if (inArrayKey === false) {
+                if(inArrayKey === false) {
                     console.log('song does not exists in playlist');
-
                     //add to sound manager
                     soundManager.createSound({
                         id: track.id,
                         url: track.url
                     });
-
                     //add to playlist
                     this.addToPlaylist(track);
                 }
-                
                 return track.id;
             },
-            removeSong: function (song, index) {
+            removeSong: function(song, index) {
                 //if this song is playing stop it
-                if (song === currentTrack) {
+                if(song === currentTrack) {
                     this.stop();
                 }
-                
                 //unload from soundManager
                 soundManager.destroySound(song);
-
                 //remove from playlist
                 playlist.splice(index, 1);
-                
                 //once all done then broadcast
                 $rootScope.$broadcast('player:playlist', playlist);
             },
-            initPlayTrack: function (trackId, isResume) {
-                if (isResume !== true) {
+            initPlayTrack: function(trackId, isResume) {
+                if(isResume !== true) {
                     //stop and unload currently playing track
                     this.stop();
                     //set new track as current track
                     this.setCurrentTrack(trackId);
                 }
-                
                 //play it
                 soundManager.play(trackId);
-                
                 $rootScope.$broadcast('track:id', trackId);
-
                 //set as playing
                 isPlaying = true;
                 $rootScope.$broadcast('music:isPlaying', isPlaying);
             },
-            play: function () {
+            play: function() {
                 var trackToPlay = null;
                 //check if no track loaded, else play loaded track
-                if (this.getCurrentTrack() === null) {
-                    if (soundManager.soundIDs.length === 0) {
+                if(this.getCurrentTrack() === null) {
+                    if(soundManager.soundIDs.length === 0) {
                         console.log('playlist is empty!');
                         return;
                     }
-
                     trackToPlay = soundManager.soundIDs[0];
-                    
                     this.initPlayTrack(trackToPlay);
                 } else {
                     trackToPlay = this.getCurrentTrack();
-                    
                     this.initPlayTrack(trackToPlay, true);
                 }
             },
-            pause: function () {
+            pause: function() {
                 soundManager.pause(this.getCurrentTrack());
-
                 //set as not playing
                 isPlaying = false;
                 $rootScope.$broadcast('music:isPlaying', isPlaying);
             },
-            stop: function () {
+            stop: function() {
                 //first pause it
                 this.pause();
-                
                 this.resetProgress();
                 $rootScope.$broadcast('track:progress', trackProgress);
                 $rootScope.$broadcast('currentTrack:position', 0);
-				$rootScope.$broadcast('currentTrack:duration', 0);
-                                
+                $rootScope.$broadcast('currentTrack:duration', 0);
                 soundManager.stopAll();
                 soundManager.unload(this.getCurrentTrack());
             },
-            playTrack: function (trackId) {
+            playTrack: function(trackId) {
                 this.initPlayTrack(trackId);
             },
-            nextTrack: function () {
+            nextTrack: function() {
                 var currentTrackKey = this.getIndexByValue(soundManager.soundIDs, this.getCurrentTrack());
                 var nextTrackKey = +currentTrackKey + 1;
                 var nextTrack = soundManager.soundIDs[nextTrackKey];
-
-                if (typeof nextTrack !== 'undefined') {
+                if(typeof nextTrack !== 'undefined') {
                     this.playTrack(nextTrack);
                 } else {
                     //if no next track found
-                    if (repeat === true) {
+                    if(repeat === true) {
                         //start first track if repeat is on
                         this.playTrack(soundManager.soundIDs[0]);
                     } else {
                         //breadcase not playing anything
                         isPlaying = false;
-                		$rootScope.$broadcast('music:isPlaying', isPlaying);
+                        $rootScope.$broadcast('music:isPlaying', isPlaying);
                     }
                 }
             },
-            prevTrack: function () {
+            prevTrack: function() {
                 var currentTrackKey = this.getIndexByValue(soundManager.soundIDs, this.getCurrentTrack());
                 var prevTrackKey = +currentTrackKey - 1;
                 var prevTrack = soundManager.soundIDs[prevTrackKey];
-
-                if (typeof prevTrack !== 'undefined') {
+                if(typeof prevTrack !== 'undefined') {
                     this.playTrack(prevTrack);
                 } else {
                     console.log('no prev track found!');
                 }
             },
-            mute: function () {
-                if (soundManager.muted === true) {
+            mute: function() {
+                if(soundManager.muted === true) {
                     soundManager.unmute();
                 } else {
                     soundManager.mute();
                 }
-
                 $rootScope.$broadcast('music:mute', soundManager.muted);
             },
-            getMuteStatus: function () {
+            getMuteStatus: function() {
                 return soundManager.muted;
             },
-            repeatToggle: function () {
-                if (repeat === true) {
+            repeatToggle: function() {
+                if(repeat === true) {
                     repeat = false;
                 } else {
                     repeat = true;
                 }
-
                 $rootScope.$broadcast('music:repeat', repeat);
             },
-            getRepeatStatus: function () {
+            getRepeatStatus: function() {
                 return repeat;
             },
-            getVolume: function () {
+            getVolume: function() {
                 return volume;
             },
-            adjustVolume: function (increase) {
-                var changeVolume = function (volume) {
-                    for (var i = 0; i < soundManager.soundIDs.length; i++) {
+            adjustVolume: function(increase) {
+                var changeVolume = function(volume) {
+                    for(var i = 0; i < soundManager.soundIDs.length; i++) {
                         var mySound = soundManager.getSoundById(soundManager.soundIDs[i]);
                         mySound.setVolume(volume);
                     }
-
                     $rootScope.$broadcast('music:volume', volume);
                 };
-
-                if (increase === true) {
-                    if (volume < 100) {
+                if(increase === true) {
+                    if(volume < 100) {
                         volume = volume + 10;
                         changeVolume(volume);
                     }
                 } else {
-                    if (volume > 0) {
+                    if(volume > 0) {
                         volume = volume - 10;
                         changeVolume(volume);
                     }
                 }
             },
-            clearPlaylist: function (callback) {
+            clearPlaylist: function(callback) {
                 console.log('clear playlist');
                 this.resetProgress();
-
                 //unload and destroy soundmanager sounds
                 var smIdsLength = soundManager.soundIDs.length;
                 this.asyncLoop({
                     length: smIdsLength,
-                    functionToLoop: function (loop, i) {
-                        setTimeout(function () {
+                    functionToLoop: function(loop, i) {
+                        setTimeout(function() {
                             //custom code
                             soundManager.destroySound(soundManager.soundIDs[0]);
                             //custom code
                             loop();
                         }, 100);
                     },
-                    callback: function () {
+                    callback: function() {
                         //callback custom code
                         console.log('All done!');
                         //clear playlist
                         playlist = [];
                         $rootScope.$broadcast('player:playlist', playlist);
-
                         callback(true);
                         //callback custom code
                     }
                 });
-
             },
-            resetProgress: function () {
+            resetProgress: function() {
                 trackProgress = 0;
             }
         };
-    }])
-
-    .directive('soundManager', ['$filter', 'angularPlayer', function ($filter, angularPlayer) {
+    }
+]);
+ngSoundManager.directive('soundManager', ['$filter', 'angularPlayer',
+    function($filter, angularPlayer) {
         return {
             restrict: "E",
-            link: function (scope, element, attrs) {
-
+            link: function(scope, element, attrs) {
                 //init and load sound manager 2
                 angularPlayer.init();
-
-                scope.$on('track:progress', function (event, data) {
-                    scope.$apply(function () {
+                scope.$on('track:progress', function(event, data) {
+                    scope.$apply(function() {
                         scope.progress = data;
                     });
                 });
-
-                scope.$on('track:id', function (event, data) {
-                    scope.$apply(function () {
+                scope.$on('track:id', function(event, data) {
+                    scope.$apply(function() {
                         scope.currentPlaying = angularPlayer.currentTrackData();
                     });
                 });
-
-                scope.$on('currentTrack:position', function (event, data) {
-                    scope.$apply(function () {
+                scope.$on('currentTrack:position', function(event, data) {
+                    scope.$apply(function() {
                         scope.currentPostion = $filter('humanTime')(data);
                     });
                 });
-
-                scope.$on('currentTrack:duration', function (event, data) {
-                    scope.$apply(function () {
+                scope.$on('currentTrack:duration', function(event, data) {
+                    scope.$apply(function() {
                         scope.currentDuration = $filter('humanTime')(data);
                     });
                 });
-
                 scope.isPlaying = false;
-                scope.$on('music:isPlaying', function (event, data) {
-                    scope.$apply(function () {
+                scope.$on('music:isPlaying', function(event, data) {
+                    scope.$apply(function() {
                         scope.isPlaying = data;
                     });
                 });
-                
                 scope.playlist = angularPlayer.getPlaylist(); //on load
-                scope.$on('player:playlist', function (event, data) {
-                    scope.$apply(function () {
+                scope.$on('player:playlist', function(event, data) {
+                    scope.$apply(function() {
                         scope.playlist = data;
                     });
                 });
             }
         };
-    }])
-    .directive('musicPlayer', ['angularPlayer', function (angularPlayer) {
+    }
+]);
+ngSoundManager.directive('musicPlayer', ['angularPlayer',
+    function(angularPlayer) {
         return {
             restrict: "EA",
             scope: {
                 song: "=addSong"
             },
-            link: function (scope, element, attrs) {
-                var addToPlaylist = function () {
+            link: function(scope, element, attrs) {
+                var addToPlaylist = function() {
                     var trackId = angularPlayer.addTrack(scope.song);
-                    
                     //if request to play the track
-                    if (attrs.musicPlayer === 'play') {
+                    if(attrs.musicPlayer === 'play') {
                         angularPlayer.playTrack(trackId);
                     }
                 };
-
-                element.bind('click', function () {
+                element.bind('click', function() {
                     console.log('adding song to playlist');
                     addToPlaylist();
                 });
             }
         };
-    }])
-    .directive('playFromPlaylist', ['angularPlayer', function (angularPlayer) {
+    }
+]);
+ngSoundManager.directive('playFromPlaylist', ['angularPlayer', function (angularPlayer) {
         return {
             restrict: "EA",
             scope: {
@@ -6448,21 +6487,23 @@ angular.module('angularSoundManager', [])
                 });
             }
         };
-    }])
-    .directive('removeFromPlaylist', ['angularPlayer', function (angularPlayer) {
+    }]);
+ngSoundManager.directive('removeFromPlaylist', ['angularPlayer',
+    function(angularPlayer) {
         return {
             restrict: "EA",
             scope: {
                 song: "=removeFromPlaylist"
             },
-            link: function (scope, element, attrs) {
-                element.bind('click', function (event) {
+            link: function(scope, element, attrs) {
+                element.bind('click', function(event) {
                     angularPlayer.removeSong(scope.song.id, attrs.index);
                 });
             }
         };
-    }])
-    .directive('seekTrack', ['angularPlayer', function (angularPlayer) {
+    }
+]);
+ngSoundManager.directive('seekTrack', ['angularPlayer', function (angularPlayer) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -6493,8 +6534,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    }])
-    .directive('playMusic', ['angularPlayer', function (angularPlayer) {
+    }]);
+ngSoundManager.directive('playMusic', ['angularPlayer', function (angularPlayer) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -6505,8 +6546,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    }])
-    .directive('pauseMusic', ['angularPlayer', function (angularPlayer) {
+    }]);
+ngSoundManager.directive('pauseMusic', ['angularPlayer', function (angularPlayer) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -6515,8 +6556,8 @@ angular.module('angularSoundManager', [])
                 });
             }
         };
-    }])
-    .directive('stopMusic', ['angularPlayer', function (angularPlayer) {
+    }]);
+ngSoundManager.directive('stopMusic', ['angularPlayer', function (angularPlayer) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -6525,8 +6566,8 @@ angular.module('angularSoundManager', [])
                 });
             }
         };
-    }])
-    .directive('nextTrack', ['angularPlayer', function (angularPlayer) {
+    }]);
+ngSoundManager.directive('nextTrack', ['angularPlayer', function (angularPlayer) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -6537,8 +6578,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    }])
-    .directive('prevTrack', ['angularPlayer', function (angularPlayer) {
+    }]);
+ngSoundManager.directive('prevTrack', ['angularPlayer', function (angularPlayer) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -6549,8 +6590,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    }])
-    .directive('muteMusic', ['angularPlayer', function (angularPlayer) {
+    }]);
+ngSoundManager.directive('muteMusic', ['angularPlayer', function (angularPlayer) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -6568,8 +6609,8 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    }])
-    .directive('repeatMusic', ['angularPlayer', function (angularPlayer) {
+    }]);
+ngSoundManager.directive('repeatMusic', ['angularPlayer', function (angularPlayer) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -6586,31 +6627,30 @@ angular.module('angularSoundManager', [])
                 });
             }
         };
-    }])
-    .directive('musicVolume', ['angularPlayer', function (angularPlayer) {
+    }]);
+ngSoundManager.directive('musicVolume', ['angularPlayer',
+    function(angularPlayer) {
         return {
             restrict: "EA",
-            link: function (scope, element, attrs) {
-
-                element.bind('click', function (event) {
-                    if (attrs.type === 'increase') {
+            link: function(scope, element, attrs) {
+                element.bind('click', function(event) {
+                    if(attrs.type === 'increase') {
                         angularPlayer.adjustVolume(true);
                     } else {
                         angularPlayer.adjustVolume(false);
                     }
                 });
-
                 scope.volume = angularPlayer.getVolume();
-                scope.$on('music:volume', function (event, data) {
-                    scope.$apply(function () {
+                scope.$on('music:volume', function(event, data) {
+                    scope.$apply(function() {
                         scope.volume = data;
                     });
                 });
-
             }
         };
-    }])
-    .directive('clearPlaylist', ['angularPlayer', function (angularPlayer) {
+    }
+]);
+ngSoundManager.directive('clearPlaylist', ['angularPlayer', function (angularPlayer) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
@@ -6627,31 +6667,28 @@ angular.module('angularSoundManager', [])
 
             }
         };
-    }])
-    .directive('playAll', ['angularPlayer', function (angularPlayer) {
+    }]);
+ngSoundManager.directive('playAll', ['angularPlayer',
+    function(angularPlayer) {
         return {
             restrict: "EA",
             scope: {
                 songs: '=playAll'
             },
-            link: function (scope, element, attrs) {
-
-                element.bind('click', function (event) {
-
+            link: function(scope, element, attrs) {
+                element.bind('click', function(event) {
                     //first clear the playlist
-                    angularPlayer.clearPlaylist(function (data) {
+                    angularPlayer.clearPlaylist(function(data) {
                         console.log('cleared, ok now add to playlist');
                         //add songs to playlist
-                        for (var i = 0; i < scope.songs.length; i++) {
+                        for(var i = 0; i < scope.songs.length; i++) {
                             angularPlayer.addTrack(scope.songs[i]);
                         }
-                        
                         //play first song
                         angularPlayer.play();
                     });
-
                 });
-
             }
         };
-    }]);
+    }
+]);
