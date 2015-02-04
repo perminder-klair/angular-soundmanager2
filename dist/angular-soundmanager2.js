@@ -18,7 +18,7 @@
  * About this file
  * -------------------------------------------------------------------------------------
  * This is the fully-commented source version of the SoundManager 2 API,
- * recommended for use during development and testing.a
+ * recommended for use during development and testing.
  *
  * See soundmanager2-nodebug-jsmin.js for an optimized build (~11KB with gzip.)
  * http://schillmania.com/projects/soundmanager2/doc/getstarted/#basic-inclusion
