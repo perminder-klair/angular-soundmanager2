@@ -6078,8 +6078,8 @@ angular.module('angularSoundManager', [])
                             soundManager._writeDebug(this.id + ' finished playing');
                             if (autoPlay === true) {
                                 //play next track if autoplay is on
-                                //get your angular element
-                                var elem = angular.element(document.querySelector('[ng-controller]'));
+                                //get your angular app
+                                var elem = angular.element(document.querySelector('[ng-app]'));
                                 //get the injector.
                                 var injector = elem.injector();
                                 //get the service.
@@ -6156,8 +6156,9 @@ angular.module('angularSoundManager', [])
                 $rootScope.$broadcast('player:playlist', playlist);
             },
             addTrack: function (track) {
-                //check if url is playable
-                if (soundManager.canPlayURL(track.url) !== true) {
+            	
+            	//check if track itself is valid and if its url is playable
+                if (typeof track == 'undefined' || soundManager.canPlayURL(track.url) !== true) {
                     console.log('invalid song url');
                     return null;
                 }
@@ -6252,6 +6253,10 @@ angular.module('angularSoundManager', [])
                 this.initPlayTrack(trackId);
             },
             nextTrack: function () {
+               if (this.getCurrentTrack() === null){
+                   console.log("Please click on Play before this action");
+                   return null;
+              }
                 var currentTrackKey = this.getIndexByValue(soundManager.soundIDs, this.getCurrentTrack());
                 var nextTrackKey = +currentTrackKey + 1;
                 var nextTrack = soundManager.soundIDs[nextTrackKey];
@@ -6271,6 +6276,10 @@ angular.module('angularSoundManager', [])
                 }
             },
             prevTrack: function () {
+        	if (this.getCurrentTrack() === null){
+                    console.log("Please click on Play before this action");
+        	    return null;
+                }
                 var currentTrackKey = this.getIndexByValue(soundManager.soundIDs, this.getCurrentTrack());
                 var prevTrackKey = +currentTrackKey - 1;
                 var prevTrack = soundManager.soundIDs[prevTrackKey];
@@ -6283,7 +6292,7 @@ angular.module('angularSoundManager', [])
             },
             mute: function () {
                 if (soundManager.muted === true) {
-                    soundManager.unmute()
+                    soundManager.unmute();
                 } else {
                     soundManager.mute();
                 }
@@ -6329,6 +6338,16 @@ angular.module('angularSoundManager', [])
                         changeVolume(volume);
                     }
                 }
+            }, 
+            adjustVolumeSlider: function (value) {
+                var changeVolume = function (volume) {
+                    for (var i = 0; i < soundManager.soundIDs.length; i++) {
+                        var mySound = soundManager.getSoundById(soundManager.soundIDs[i]);
+                        mySound.setVolume(volume);
+                    }
+                    $rootScope.$broadcast('music:volume', volume);
+                };
+                changeVolume(value);
             },
             clearPlaylist: function (callback) {
                 console.log('clear playlist');
@@ -6475,7 +6494,16 @@ angular.module('angularSoundManager', [])
 
                     var sound = soundManager.getSoundById(angularPlayer.getCurrentTrack());
 
-                    var x = event.offsetX,
+                    var getXOffset = function (event) {
+                      var x = 0, element = event.target;
+                      while (element && !isNaN(element.offsetLeft) && !isNaN(element.offsetTop)) {
+                        x += element.offsetLeft - element.scrollLeft;
+                        element = element.offsetParent;
+                      }
+                      return event.clientX - x;
+                    };
+
+                    var x = event.offsetX || getXOffset(event),
                         width = element[0].clientWidth,
                         duration = sound.durationEstimate;
 
@@ -6598,6 +6626,39 @@ angular.module('angularSoundManager', [])
                     });
                 });
 
+            }
+        };
+    }])
+        .directive('volumeBar', ['angularPlayer', function (angularPlayer) {
+        return {
+            restrict: "EA",
+            link: function (scope, element, attrs) {
+
+                 element.bind('click', function (event) {
+                    var getXOffset = function (event) {
+                      var x = 0, element = event.target;
+                      while (element && !isNaN(element.offsetLeft) && !isNaN(element.offsetTop)) {
+                        x += element.offsetLeft - element.scrollLeft;
+                        element = element.offsetParent;
+                      }
+                      return event.clientX - x;
+                    };
+
+                    var x = event.offsetX || getXOffset(event),
+                        width = element[0].clientWidth,
+                        duration = 100;
+
+                    var volume = (x / width) * duration;
+                    angularPlayer.adjustVolumeSlider(volume);
+                });
+
+
+                scope.volume = angularPlayer.getVolume();
+                scope.$on('music:volume', function (event, data) {
+                    scope.$apply(function () {
+                        scope.volume = data;
+                    });
+                });
             }
         };
     }])
