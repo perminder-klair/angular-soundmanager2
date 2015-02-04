@@ -139,8 +139,8 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
                 $rootScope.$broadcast('player:playlist', playlist);
             },
             addTrack: function(track) {
-                //check if url is playable
-                if(soundManager.canPlayURL(track.url) !== true) {
+                //check if track itself is valid and if its url is playable
+                if(typeof track == 'undefined' || soundManager.canPlayURL(track.url) !== true) {
                     console.log('invalid song url');
                     return null;
                 }
@@ -219,6 +219,10 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
                 this.initPlayTrack(trackId);
             },
             nextTrack: function() {
+                if(this.getCurrentTrack() === null) {
+                    console.log("Please click on Play before this action");
+                    return null;
+                }
                 var currentTrackKey = this.getIndexByValue(soundManager.soundIDs, this.getCurrentTrack());
                 var nextTrackKey = +currentTrackKey + 1;
                 var nextTrack = soundManager.soundIDs[nextTrackKey];
@@ -237,6 +241,10 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
                 }
             },
             prevTrack: function() {
+                if(this.getCurrentTrack() === null) {
+                    console.log("Please click on Play before this action");
+                    return null;
+                }
                 var currentTrackKey = this.getIndexByValue(soundManager.soundIDs, this.getCurrentTrack());
                 var prevTrackKey = +currentTrackKey - 1;
                 var prevTrack = soundManager.soundIDs[prevTrackKey];
@@ -290,6 +298,16 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
                         changeVolume(volume);
                     }
                 }
+            },
+            adjustVolumeSlider: function(value) {
+                var changeVolume = function(volume) {
+                    for(var i = 0; i < soundManager.soundIDs.length; i++) {
+                        var mySound = soundManager.getSoundById(soundManager.soundIDs[i]);
+                        mySound.setVolume(volume);
+                    }
+                    $rootScope.$broadcast('music:volume', volume);
+                };
+                changeVolume(value);
             },
             clearPlaylist: function(callback) {
                 console.log('clear playlist');
