@@ -1,6 +1,6 @@
 {
     "name": "angular-soundmanager2",
-    "version": "0.5.2",
+    "version": "0.5.3",
     "description": "SoundManager2 Music Player for AngularJs",
     "main": "src/angular-soundmanager2.js",
     "directories": {
