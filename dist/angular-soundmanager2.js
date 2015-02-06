@@ -4553,16 +4553,35 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
                 //broadcast playlist
                 $rootScope.$broadcast('player:playlist', playlist);
             },
+            isTrackValid: function (track) {
+                if (typeof track == 'undefined') {
+                    console.log('invalid track data');
+                    return false;
+                }
+                
+                if (track.url.indexOf("soundcloud") > -1) {
+                    //if soundcloud url
+                    if(typeof track.url == 'undefined') {
+                        console.log('invalid soundcloud track url');
+                        return false;
+                    }
+                } else {
+                    if(soundManager.canPlayURL(track.url) !== true) {
+                        console.log('invalid song url');
+                        return false;
+                    }
+                }  
+            },
             addTrack: function(track) {
                 //check if track itself is valid and if its url is playable
-                if(typeof track == 'undefined' || soundManager.canPlayURL(track.url) !== true) {
-                    console.log('invalid song url');
+                if (!this.isTrackValid) {
                     return null;
-                }
+                }    
+                
                 //check if song already does not exists then add to playlist
                 var inArrayKey = this.isInArray(this.getPlaylist(), track.id);
                 if(inArrayKey === false) {
-                    console.log('song does not exists in playlist');
+                    //console.log('song does not exists in playlist');
                     //add to sound manager
                     soundManager.createSound({
                         id: track.id,
