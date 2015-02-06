@@ -337,6 +337,9 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
             },
             resetProgress: function() {
                 trackProgress = 0;
+            },
+            isPlayingStatus: function() {
+                return isPlaying;
             }
         };
     }
