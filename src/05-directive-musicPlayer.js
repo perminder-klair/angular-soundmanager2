@@ -1,5 +1,5 @@
-ngSoundManager.directive('musicPlayer', ['angularPlayer',
-    function(angularPlayer) {
+ngSoundManager.directive('musicPlayer', ['angularPlayer', '$log',
+    function(angularPlayer, $log) {
         return {
             restrict: "EA",
             scope: {
@@ -14,7 +14,7 @@ ngSoundManager.directive('musicPlayer', ['angularPlayer',
                     }
                 };
                 element.bind('click', function() {
-                    console.log('adding song to playlist');
+                    $log.debug('adding song to playlist');
                     addToPlaylist();
                 });
             }

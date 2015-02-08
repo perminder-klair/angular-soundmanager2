@@ -1,5 +1,5 @@
-ngSoundManager.directive('playAll', ['angularPlayer',
-    function(angularPlayer) {
+ngSoundManager.directive('playAll', ['angularPlayer', '$log',
+    function(angularPlayer, $log) {
         return {
             restrict: "EA",
             scope: {
@@ -9,7 +9,7 @@ ngSoundManager.directive('playAll', ['angularPlayer',
                 element.bind('click', function(event) {
                     //first clear the playlist
                     angularPlayer.clearPlaylist(function(data) {
-                        console.log('cleared, ok now add to playlist');
+                        $log.debug('cleared, ok now add to playlist');
                         //add songs to playlist
                         for(var i = 0; i < scope.songs.length; i++) {
                             angularPlayer.addTrack(scope.songs[i]);

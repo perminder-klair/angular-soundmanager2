@@ -1,11 +1,11 @@
-ngSoundManager.directive('seekTrack', ['angularPlayer', function (angularPlayer) {
+ngSoundManager.directive('seekTrack', ['angularPlayer', '$log', function (angularPlayer, $log) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
 
                 element.bind('click', function (event) {
                     if (angularPlayer.getCurrentTrack() === null) {
-                        console.log('no track loaded');
+                        $log.debug('no track loaded');
                         return;
                     }
 
