@@ -4398,7 +4398,11 @@
     }
 }(window));
 
-var ngSoundManager = angular.module('angularSoundManager', []);
+var ngSoundManager = angular.module('angularSoundManager', [])
+  .config(['$logProvider', function($logProvider){
+    $logProvider.debugEnabled(false);
+  }]);
+
 
 ngSoundManager.filter('humanTime', function () {
         return function (input) {
@@ -4413,8 +4417,8 @@ ngSoundManager.filter('humanTime', function () {
         };
     });
 
-ngSoundManager.factory('angularPlayer', ['$rootScope',
-    function($rootScope) {
+ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
+    function($rootScope, $log) {
         var currentTrack = null,
             repeat = false,
             autoPlay = true,
@@ -4431,10 +4435,10 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
                     //url: '/path/to/swfs/',
                     //flashVersion: 9,
                     preferFlash: false, // prefer 100% HTML5 mode, where both supported
-                    debugMode: false, // enable debugging output (console.log() with HTML fallback)
+                    debugMode: false, // enable debugging output ($log.debug() with HTML fallback)
                     useHTML5Audio: true,
                     onready: function() {
-                        //console.log('sound manager ready!');
+                        //$log.debug('sound manager ready!');
                     },
                     ontimeout: function() {
                         alert('SM2 failed to start. Flash missing, blocked or security error?');
@@ -4495,10 +4499,10 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
                     }
                 });
                 soundManager.onready(function() {
-                    console.log('song manager ready!');
+                    $log.debug('song manager ready!');
                     // Ready to use; soundManager.createSound() etc. can now be called.
                     var isSupported = soundManager.ok();
-                    console.log('is supported: ' + isSupported);
+                    $log.debug('is supported: ' + isSupported);
                     $rootScope.$broadcast('angularPlayer:ready', true);
                 });
             },
@@ -4555,33 +4559,33 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
             },
             isTrackValid: function (track) {
                 if (typeof track == 'undefined') {
-                    console.log('invalid track data');
+                    $log.debug('invalid track data');
                     return false;
                 }
-                
+
                 if (track.url.indexOf("soundcloud") > -1) {
                     //if soundcloud url
                     if(typeof track.url == 'undefined') {
-                        console.log('invalid soundcloud track url');
+                        $log.debug('invalid soundcloud track url');
                         return false;
                     }
                 } else {
                     if(soundManager.canPlayURL(track.url) !== true) {
-                        console.log('invalid song url');
+                        $log.debug('invalid song url');
                         return false;
                     }
-                }  
+                }
             },
             addTrack: function(track) {
                 //check if track itself is valid and if its url is playable
                 if (!this.isTrackValid) {
                     return null;
-                }    
-                
+                }
+
                 //check if song already does not exists then add to playlist
                 var inArrayKey = this.isInArray(this.getPlaylist(), track.id);
                 if(inArrayKey === false) {
-                    //console.log('song does not exists in playlist');
+                    //$log.debug('song does not exists in playlist');
                     //add to sound manager
                     soundManager.createSound({
                         id: track.id,
@@ -4623,7 +4627,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
                 //check if no track loaded, else play loaded track
                 if(this.getCurrentTrack() === null) {
                     if(soundManager.soundIDs.length === 0) {
-                        console.log('playlist is empty!');
+                        $log.debug('playlist is empty!');
                         return;
                     }
                     trackToPlay = soundManager.soundIDs[0];
@@ -4654,7 +4658,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
             },
             nextTrack: function() {
                 if(this.getCurrentTrack() === null) {
-                    console.log("Please click on Play before this action");
+                    $log.debug("Please click on Play before this action");
                     return null;
                 }
                 var currentTrackKey = this.getIndexByValue(soundManager.soundIDs, this.getCurrentTrack());
@@ -4676,7 +4680,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
             },
             prevTrack: function() {
                 if(this.getCurrentTrack() === null) {
-                    console.log("Please click on Play before this action");
+                    $log.debug("Please click on Play before this action");
                     return null;
                 }
                 var currentTrackKey = this.getIndexByValue(soundManager.soundIDs, this.getCurrentTrack());
@@ -4685,7 +4689,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
                 if(typeof prevTrack !== 'undefined') {
                     this.playTrack(prevTrack);
                 } else {
-                    console.log('no prev track found!');
+                    $log.debug('no prev track found!');
                 }
             },
             mute: function() {
@@ -4744,7 +4748,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
                 changeVolume(value);
             },
             clearPlaylist: function(callback) {
-                console.log('clear playlist');
+                $log.debug('clear playlist');
                 this.resetProgress();
                 //unload and destroy soundmanager sounds
                 var smIdsLength = soundManager.soundIDs.length;
@@ -4760,7 +4764,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
                     },
                     callback: function() {
                         //callback custom code
-                        console.log('All done!');
+                        $log.debug('All done!');
                         //clear playlist
                         playlist = [];
                         $rootScope.$broadcast('player:playlist', playlist);
@@ -4778,6 +4782,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope',
         };
     }
 ]);
+
 
 ngSoundManager.directive('soundManager', ['$filter', 'angularPlayer',
     function($filter, angularPlayer) {
@@ -4823,8 +4828,8 @@ ngSoundManager.directive('soundManager', ['$filter', 'angularPlayer',
     }
 ]);
 
-ngSoundManager.directive('musicPlayer', ['angularPlayer',
-    function(angularPlayer) {
+ngSoundManager.directive('musicPlayer', ['angularPlayer', '$log',
+    function(angularPlayer, $log) {
         return {
             restrict: "EA",
             scope: {
@@ -4839,13 +4844,14 @@ ngSoundManager.directive('musicPlayer', ['angularPlayer',
                     }
                 };
                 element.bind('click', function() {
-                    console.log('adding song to playlist');
+                    $log.debug('adding song to playlist');
                     addToPlaylist();
                 });
             }
         };
     }
 ]);
+
 
 ngSoundManager.directive('playFromPlaylist', ['angularPlayer', function (angularPlayer) {
         return {
@@ -4877,14 +4883,14 @@ ngSoundManager.directive('removeFromPlaylist', ['angularPlayer',
     }
 ]);
 
-ngSoundManager.directive('seekTrack', ['angularPlayer', function (angularPlayer) {
+ngSoundManager.directive('seekTrack', ['angularPlayer', '$log', function (angularPlayer, $log) {
         return {
             restrict: "EA",
             link: function (scope, element, attrs) {
 
                 element.bind('click', function (event) {
                     if (angularPlayer.getCurrentTrack() === null) {
-                        console.log('no track loaded');
+                        $log.debug('no track loaded');
                         return;
                     }
 
@@ -4909,6 +4915,7 @@ ngSoundManager.directive('seekTrack', ['angularPlayer', function (angularPlayer)
             }
         };
     }]);
+
 
 ngSoundManager.directive('playMusic', ['angularPlayer', function (angularPlayer) {
         return {
@@ -5033,17 +5040,17 @@ ngSoundManager.directive('musicVolume', ['angularPlayer',
     }
 ]);
 
-ngSoundManager.directive('clearPlaylist', ['angularPlayer',
-    function(angularPlayer) {
+ngSoundManager.directive('clearPlaylist', ['angularPlayer', '$log',
+    function(angularPlayer, $log) {
         return {
             restrict: "EA",
             link: function(scope, element, attrs) {
                 element.bind('click', function(event) {
-                    //first stop any playing music 
+                    //first stop any playing music
                     angularPlayer.stop();
                     angularPlayer.setCurrentTrack(null);
                     angularPlayer.clearPlaylist(function(data) {
-                        console.log('all clear!');
+                      $log.debug('all clear!');
                     });
                 });
             }
@@ -5051,8 +5058,9 @@ ngSoundManager.directive('clearPlaylist', ['angularPlayer',
     }
 ]);
 
-ngSoundManager.directive('playAll', ['angularPlayer',
-    function(angularPlayer) {
+
+ngSoundManager.directive('playAll', ['angularPlayer', '$log',
+    function(angularPlayer, $log) {
         return {
             restrict: "EA",
             scope: {
@@ -5062,7 +5070,7 @@ ngSoundManager.directive('playAll', ['angularPlayer',
                 element.bind('click', function(event) {
                     //first clear the playlist
                     angularPlayer.clearPlaylist(function(data) {
-                        console.log('cleared, ok now add to playlist');
+                        $log.debug('cleared, ok now add to playlist');
                         //add songs to playlist
                         for(var i = 0; i < scope.songs.length; i++) {
                             angularPlayer.addTrack(scope.songs[i]);
@@ -5075,6 +5083,7 @@ ngSoundManager.directive('playAll', ['angularPlayer',
         };
     }
 ]);
+
 
 ngSoundManager.directive('volumeBar', ['angularPlayer',
     function(angularPlayer) {
