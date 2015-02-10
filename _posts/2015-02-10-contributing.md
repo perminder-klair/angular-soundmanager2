@@ -3,7 +3,7 @@ layout: page
 title: "Contributing"
 category: dev
 date: 2015-02-10 14:29:17
-order: 5
+order: 6
 ---
 
 The first step in contributing to the code base is forking the repo.
