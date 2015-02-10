@@ -24,7 +24,7 @@ Take a look at files under `examples` directory for demo and how to create playe
 
 ### Get Started
 
-Start by reading [installation]({% post_url 2015-02-10-installation %})
+Start by reading [installation](http://perminder-klair.github.io/angular-soundmanager2/doc/installation.html)
 
 
 ### HTML5 Audio() Support
