@@ -1,4 +1,6 @@
-## Documentaion
+## Documentaion using Jekyll
+
+Make sure Jekyll is installed, if not follow: [http://jekyllrb.com/docs/installation/](http://jekyllrb.com/docs/installation/)
 
 ### To serve
 
