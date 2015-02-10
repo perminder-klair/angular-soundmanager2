@@ -8,11 +8,10 @@ SoundManager 2 brings reliable cross-platform audio to JavaScript.
 
 ## Features
 
--- Simple to use (use of directives)
--- Playlist support
--- Soundcloud support
--- Easy to understand API documentation
--- Easy to extend
+    * Simple to use (use of directives)
+    * Playlist support
+    * Soundcloud support
+    * Easy to understand and extend API
 
 ## Usage:
 
