@@ -5,7 +5,7 @@ Make sure Jekyll is installed, if not follow: [http://jekyllrb.com/docs/installa
 ### To serve
 
 ```
-jekyll serve  
+jekyll serve --host 0.0.0.0 --port 9500   
 ```
 
 ### To build

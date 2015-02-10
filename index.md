@@ -20,7 +20,7 @@ SoundManager 2 brings reliable cross-platform audio to JavaScript.
 
 Take a look at files under `examples` directory for demo and how to create player using AngularJs directives.
 
-[Live demo](http://perminder-klair.github.io/angular-soundmanager2/)
+[Live demo](example.html)
 
 ### Get Started
 
