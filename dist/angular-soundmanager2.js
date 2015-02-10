@@ -4419,6 +4419,7 @@ ngSoundManager.filter('humanTime', function () {
 
 ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
     function($rootScope, $log) {
+        
         var currentTrack = null,
             repeat = false,
             autoPlay = true,
@@ -4426,7 +4427,12 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
             volume = 90,
             trackProgress = 0,
             playlist = [];
+        
         return {
+            /**
+             * Initialize soundmanager,
+             * requires soundmanager2 to be loaded first
+             */
             init: function() {
                 if(typeof soundManager === 'undefined') {
                     alert('Please include SoundManager2 Library!');
@@ -4506,6 +4512,9 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                     $rootScope.$broadcast('angularPlayer:ready', true);
                 });
             },
+            /**
+             * To check if value is in array
+             */
             isInArray: function(array, value) {
                 for(var i = 0; i < array.length; i++) {
                     if(array[i].id === value) {
@@ -4514,6 +4523,9 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                 }
                 return false;
             },
+            /**
+             * getIndexByValue used by this factory
+             */
             getIndexByValue: function(array, value) {
                 for(var i = 0; i < array.length; i++) {
                     if(array[i] === value) {
@@ -4522,6 +4534,9 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                 }
                 return false;
             },
+            /**
+             * asyncLoop used by this factory
+             */
             asyncLoop: function(o) {
                 var i = -1;
                 var loop = function() {
