@@ -40,7 +40,7 @@ That's it -- you're done!
 
 Take a look at files under `examples` directory for demo and how to create player using AngularJs directives.
 
-[Live demo](http://perminder-klair.github.io/angular-soundmanager2/)
+[Live demo](http://perminder-klair.github.io/angular-soundmanager2/example.html)
 
 
 ## HTML5 Audio() Support
