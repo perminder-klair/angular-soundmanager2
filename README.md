@@ -35,6 +35,8 @@ angular.module('myApp', ['angularSoundManager'])
 
 That's it -- you're done!
 
+Advanced API documentation available here: [http://perminder-klair.github.io/angular-soundmanager2/](http://perminder-klair.github.io/angular-soundmanager2/)
+
 
 ### Example demo
 
