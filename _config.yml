@@ -1,6 +1,6 @@
 # Site title and subtitle. This is used in _includes/header.html
 title: 'AngularJs SoundManager2'
-subtitle: 'Music Player for AngularJs'
+subtitle: 'A Music Player for AngularJs'
 
 # if you wish to integrate disqus on pages set your shortname here
 disqus_shortname: ''

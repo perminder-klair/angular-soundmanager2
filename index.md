@@ -9,7 +9,12 @@ SoundManager 2 brings reliable cross-platform audio to JavaScript.
 
 **Requirements:** AngularJS 1.2+
 
--- Add soundcloud support
+## Features
+
+    * Simple to use (use of directives)
+    * Playlist support
+    * Soundcloud support
+    * Easy to understand and extend API
 
 ### Example demo
 

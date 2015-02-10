@@ -26,13 +26,3 @@ angular.module('myApp', ['angularSoundManager'])
 
 That's it -- you're done!
 
-
-## Development
-
-Install dependencies
-
-`npm install`
-
-Run grunt to watch files to update `dist`
-
-`grunt`
