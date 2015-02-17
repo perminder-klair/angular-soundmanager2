@@ -1,12 +1,19 @@
 # AngularJs Music Player
 
+[![Join the chat at https://gitter.im/perminder-klair/angular-soundmanager2](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/perminder-klair/angular-soundmanager2?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 A music player made with SoundManager 2 API for AngularJs to play music files.
 
 SoundManager 2 brings reliable cross-platform audio to JavaScript.
 
 **Requirements:** AngularJS 1.2+
 
--- Add soundcloud support
+## Features
+
+    * Simple to use (use of directives)
+    * Playlist support
+    * Soundcloud support
+    * Easy to understand and extend API
 
 ## Usage:
 
@@ -30,12 +37,14 @@ angular.module('myApp', ['angularSoundManager'])
 
 That's it -- you're done!
 
+Advanced API documentation available here: [http://perminder-klair.github.io/angular-soundmanager2/](http://perminder-klair.github.io/angular-soundmanager2/)
+
 
 ### Example demo
 
 Take a look at files under `examples` directory for demo and how to create player using AngularJs directives.
 
-[Live demo](http://perminder-klair.github.io/angular-soundmanager2/)
+[Live demo](http://perminder-klair.github.io/angular-soundmanager2/example.html)
 
 
 ## HTML5 Audio() Support
