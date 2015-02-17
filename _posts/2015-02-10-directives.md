@@ -81,6 +81,14 @@ Example:
 <button play-all="songs">Play all</button>
 ```
 
+##### Add All Tracks
+
+Following will only add tracks to playlist and will not trigger play
+
+```html
+<button play-all="songs" data-play="false">Add all</button>
+```
+
 ### Pause Track
 
 ```html
