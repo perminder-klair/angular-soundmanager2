@@ -1,2 +1,4 @@
 node_modules
 .DS_Store
+_pages
+_site 
