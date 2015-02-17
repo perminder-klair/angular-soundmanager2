@@ -29,7 +29,6 @@ module.exports = function (grunt) {
           'src/18-directive-playAll.js',
           'src/19-directive-volumeBar.js',
           'src/20-directive-playPauseToggle.js',
-          'src/21-directive-addAll.js',
         ],
         dest: 'dist/angular-soundmanager2.js'
       }
