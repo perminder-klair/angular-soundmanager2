@@ -55,6 +55,8 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                         volume: volume, // self-explanatory. 0-100, the latter being the max.
                         whileloading: function() {
                             //soundManager._writeDebug('sound '+this.id+' loading, '+this.bytesLoaded+' of '+this.bytesTotal);
+                            var trackLoaded = ((this.bytesLoaded/this.bytesTotal)*100);
+                            $rootScope.$broadcast('track:loaded', trackLoaded);
                         },
                         whileplaying: function() {
                             //soundManager._writeDebug('sound '+this.id+' playing, '+this.position+' of '+this.duration);
