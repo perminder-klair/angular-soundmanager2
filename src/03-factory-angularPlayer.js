@@ -83,6 +83,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                                 var angularPlayer = injector.get('angularPlayer');
                                 angularPlayer.nextTrack();
                                 $rootScope.$broadcast('track:id', currentTrack);
+                                $rootScope.$broadcast('track:finished', currentTrack);
                             }
                         }
                     }
