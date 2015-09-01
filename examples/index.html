@@ -31,7 +31,7 @@
         <div class="row">
             <div class="col-md-12">
                 <!-- init soundManager2 player -->
-                <sound-manager></sound-manager>
+                <sound-manager auto-play></sound-manager>
 
                 <p>
                     Currently Playing: {{ currentPlaying.title }} by {{ currentPlaying.artist }} ({{ currentPostion }} / {{ currentDuration }})
@@ -82,7 +82,7 @@
             </div>
         </div>
     </div>
-    
+
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.min.js"></script>
     <script src="../dist/angular-soundmanager2.js"></script>
     <script src="app.js"></script>
