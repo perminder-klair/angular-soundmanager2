@@ -315,35 +315,30 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
             getVolume: function() {
                 return volume;
             },
+            changeVolume: function(newVolume) {
+                // chaning global variable too
+                volume = newVolume;
+                for(var i = 0; i < soundManager.soundIDs.length; i++) {
+                    var mySound = soundManager.getSoundById(soundManager.soundIDs[i]);
+                    mySound.setVolume(volume);
+                }
+                $rootScope.$broadcast('music:volume', volume);
+            },
             adjustVolume: function(increase) {
-                var changeVolume = function(volume) {
-                    for(var i = 0; i < soundManager.soundIDs.length; i++) {
-                        var mySound = soundManager.getSoundById(soundManager.soundIDs[i]);
-                        mySound.setVolume(volume);
-                    }
-                    $rootScope.$broadcast('music:volume', volume);
-                };
                 if(increase === true) {
                     if(volume < 100) {
                         volume = volume + 10;
-                        changeVolume(volume);
+                        this.changeVolume(volume);
                     }
                 } else {
                     if(volume > 0) {
                         volume = volume - 10;
-                        changeVolume(volume);
+                        this.changeVolume(volume);
                     }
                 }
             },
             adjustVolumeSlider: function(value) {
-                var changeVolume = function(volume) {
-                    for(var i = 0; i < soundManager.soundIDs.length; i++) {
-                        var mySound = soundManager.getSoundById(soundManager.soundIDs[i]);
-                        mySound.setVolume(volume);
-                    }
-                    $rootScope.$broadcast('music:volume', volume);
-                };
-                changeVolume(value);
+                this.changeVolume(value);
             },
             clearPlaylist: function(callback) {
                 $log.debug('clear playlist');
