@@ -4419,7 +4419,7 @@ ngSoundManager.filter('humanTime', function () {
 
 ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
     function($rootScope, $log) {
-        
+
         var currentTrack = null,
             repeat = false,
             autoPlay = true,
@@ -4427,7 +4427,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
             volume = 90,
             trackProgress = 0,
             playlist = [];
-        
+
         return {
             /**
              * Initialize soundmanager,
@@ -4556,6 +4556,9 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
             },
             getCurrentTrack: function() {
                 return currentTrack;
+            },
+            getTrackObject: function(id) {
+              return playlist.filter(function(track){return track.id === id;})[0];
             },
             currentTrackData: function() {
                 var trackId = this.getCurrentTrack();
@@ -5087,12 +5090,14 @@ ngSoundManager.directive('playAll', ['angularPlayer', '$log',
                 element.bind('click', function(event) {
                     //first clear the playlist
                     angularPlayer.clearPlaylist(function(data) {
+                        $log.debug('cleared, ok now clear the current track');
+                        angularPlayer.setCurrentTrack(null);
                         $log.debug('cleared, ok now add to playlist');
                         //add songs to playlist
                         for(var i = 0; i < scope.songs.length; i++) {
                             angularPlayer.addTrack(scope.songs[i]);
                         }
-                        
+
                         if (attrs.play != 'false') {
                             //play first song
                             angularPlayer.play();

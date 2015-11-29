@@ -1,6 +1,6 @@
 ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
     function($rootScope, $log) {
-        
+
         var currentTrack = null,
             repeat = false,
             autoPlay = true,
@@ -8,7 +8,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
             volume = 90,
             trackProgress = 0,
             playlist = [];
-        
+
         return {
             /**
              * Initialize soundmanager,
@@ -137,6 +137,9 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
             },
             getCurrentTrack: function() {
                 return currentTrack;
+            },
+            getTrackObject: function(id) {
+              return playlist.filter(function(track){return track.id === id;})[0];
             },
             currentTrackData: function() {
                 var trackId = this.getCurrentTrack();
