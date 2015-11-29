@@ -188,7 +188,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                     soundManager.createSound({
                         id: track.id,
                         url: track.url,
-                        autoLoad: f === true ? true : false
+                        autoLoad: track.autoLoad === true ? true : false
                     });
                     //add to playlist
                     this.addToPlaylist(track);
