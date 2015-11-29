@@ -4558,7 +4558,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                 return currentTrack;
             },
             getTrackObject: function(id) {
-              return playlist.filter(function(track){return track.id === id;})[0];
+                return playlist.filter(function(track){return track.id === id;})[0];
             },
             currentTrackData: function() {
                 var trackId = this.getCurrentTrack();
