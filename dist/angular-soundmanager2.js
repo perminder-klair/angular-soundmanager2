@@ -436,6 +436,21 @@
             }
             return oSound;
         };
+        
+        this.destroyAllSounds = function (_bFromSound) {
+          for(var sID in sm2.sounds) {
+            sm2.sounds[sID]._iO = {};
+            sm2.sounds[sID].stop();
+            sm2.sounds[sID].unload();
+            if(!_bFromSound) {
+                // ignore if being called from SMSound instance
+                sm2.sounds[sID].destruct(true);
+            }
+          }
+          sm2.soundIDs = [];
+          sm2.sounds = {};
+          return true;
+        };
         /**
          * Destroys a SMSound sound object instance.
          *
@@ -4398,6 +4413,7 @@
     }
 }(window));
 
+
 var ngSoundManager = angular.module('angularSoundManager', [])
   .config(['$logProvider', function($logProvider){
     $logProvider.debugEnabled(false);
@@ -4772,26 +4788,26 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                 this.resetProgress();
                 //unload and destroy soundmanager sounds
                 var smIdsLength = soundManager.soundIDs.length;
-                this.asyncLoop({
-                    length: smIdsLength,
-                    functionToLoop: function(loop, i) {
-                        setTimeout(function() {
-                            //custom code
-                            soundManager.destroySound(soundManager.soundIDs[0]);
-                            //custom code
-                            loop();
-                        }, 100);
-                    },
-                    callback: function() {
-                        //callback custom code
-                        $log.debug('All done!');
-                        //clear playlist
-                        playlist = [];
-                        $rootScope.$broadcast('player:playlist', playlist);
-                        callback(true);
-                        //callback custom code
-                    }
-                });
+                soundManager.destroyAllSounds();
+                //callback custom code
+                $log.debug('All done!');
+                //clear playlist
+                playlist = [];
+                $rootScope.$broadcast('player:playlist', playlist);
+                callback(true);
+            },
+            setPlaylist: function(songs, callback) {
+              var that = this;
+              that.clearPlaylist(function () {
+                $log.debug('cleared, ok now clear the current track');
+                that.setCurrentTrack(null);
+                $log.debug('cleared, ok now add to playlist');
+                //add songs to playlist
+                for(var i = 0; i < songs.length; i++) {
+                    that.addTrack(songs[i]);
+                }
+                that.play();
+              });
             },
             resetProgress: function() {
                 trackProgress = 0;
