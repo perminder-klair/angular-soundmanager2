@@ -178,13 +178,19 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                 }
             },
             addTrack: function(track) {
-                //check if track itself is valid and if its url is playable
-                if (!this.isTrackValid) {
-                    return null;
-                }
+              this.addTracks([track]);
+              return track.id;
+            },
+            addTracks: function(tracks) {
+              var that = this;
+              //check if track itself is valid and if its url is playable
+              if (!this.isTrackValid) {
+                  return null;
+              }
 
+              tracks.forEach(function (track) {
                 //check if song already does not exists then add to playlist
-                var inArrayKey = this.isInArray(this.getPlaylist(), track.id);
+                var inArrayKey = that.isInArray(that.getPlaylist(), track.id);
                 if(inArrayKey === false) {
                     //$log.debug('song does not exists in playlist');
                     //add to sound manager
@@ -193,9 +199,14 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                         url: track.url
                     });
                     //add to playlist
-                    this.addToPlaylist(track);
+                    playlist.push(track);
                 }
-                return track.id;
+              });
+
+              //broadcast playlist
+              $rootScope.$broadcast('player:playlist', playlist);
+
+              return tracks;
             },
             removeSong: function(song, index) {
                 //if this song is playing stop it
@@ -368,9 +379,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                 that.setCurrentTrack(null);
                 $log.debug('cleared, ok now add to playlist');
                 //add songs to playlist
-                for(var i = 0; i < songs.length; i++) {
-                    that.addTrack(songs[i]);
-                }
+                that.addTracks(songs);
                 that.play();
               });
             },
