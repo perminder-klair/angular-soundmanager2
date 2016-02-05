@@ -1,5 +1,5 @@
-ngSoundManager.directive('soundManager', ['$filter', 'angularPlayer',
-    function($filter, angularPlayer) {
+ngSoundManager.directive('soundManager', ['$filter', '$timeout', 'angularPlayer',
+    function($filter, $timeout, angularPlayer) {
         return {
             restrict: "E",
             link: function(scope, element, attrs) {
