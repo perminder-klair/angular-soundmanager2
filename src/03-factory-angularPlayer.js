@@ -3,6 +3,8 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
         
         var currentTrack = null,
             repeat = false,
+            shuffle = false,
+            tempTrack = [],
             autoPlay = true,
             isPlaying = false,
             volume = 90,
@@ -201,6 +203,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                 }
                 //unload from soundManager
                 soundManager.destroySound(song);
+                
                 //remove from playlist
                 playlist.splice(index, 1);
                 //once all done then broadcast
@@ -259,16 +262,33 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                     $log.debug("Please click on Play before this action");
                     return null;
                 }
-                var currentTrackKey = this.getIndexByValue(soundManager.soundIDs, this.getCurrentTrack());
+
+                // use shuffle track list if shuffle is true
+                var useTrack = angular.copy(soundManager.soundIDs);
+                if(shuffle === true){                    
+                    useTrack = tempTrack;
+                }
+
+                console.log(soundManager.soundIDs);
+                console.log(tempTrack);
+
+                var currentTrackKey = this.getIndexByValue(useTrack, this.getCurrentTrack());
                 var nextTrackKey = +currentTrackKey + 1;
-                var nextTrack = soundManager.soundIDs[nextTrackKey];
+                var nextTrack = useTrack[nextTrackKey];
                 if(typeof nextTrack !== 'undefined') {
                     this.playTrack(nextTrack);
                 } else {
+                    // generate shuffle track list
+                    if(shuffle === true && isPlaying === true){
+                        tempTrack = angular.copy(soundManager.soundIDs);
+                        tempTrack = (tempTrack).sort(function() { return 0.5 - Math.random() });
+                        $rootScope.$broadcast('music:tempTrack', tempTrack);
+                    }
+
                     //if no next track found
                     if(repeat === true) {
                         //start first track if repeat is on
-                        this.playTrack(soundManager.soundIDs[0]);
+                        this.playTrack(useTrack[0]);
                     } else {
                         //breadcase not playing anything
                         isPlaying = false;
@@ -281,9 +301,16 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                     $log.debug("Please click on Play before this action");
                     return null;
                 }
-                var currentTrackKey = this.getIndexByValue(soundManager.soundIDs, this.getCurrentTrack());
+
+                // use shuffle track list if shuffle is true
+                var useTrack = angular.copy(soundManager.soundIDs);
+                if(shuffle === true){                    
+                    useTrack = tempTrack;
+                }
+
+                var currentTrackKey = this.getIndexByValue(useTrack, this.getCurrentTrack());
                 var prevTrackKey = +currentTrackKey - 1;
-                var prevTrack = soundManager.soundIDs[prevTrackKey];
+                var prevTrack = useTrack[prevTrackKey];
                 if(typeof prevTrack !== 'undefined') {
                     this.playTrack(prevTrack);
                 } else {
@@ -311,6 +338,21 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
             },
             getRepeatStatus: function() {
                 return repeat;
+            },
+            shuffleToggle: function() {
+                if(shuffle === true) {
+                    shuffle = false;
+                    tempTrack = angular.copy(soundManager.soundIDs);
+                } else {
+                    shuffle = true;
+                    tempTrack = angular.copy(soundManager.soundIDs);
+                    tempTrack = (tempTrack).sort(function() { return 0.5 - Math.random() });
+                }
+                $rootScope.$broadcast('music:shuffle', shuffle);
+                $rootScope.$broadcast('music:tempTrack', tempTrack);
+            },
+            getShuffleStatus: function() {
+                return shuffle;
             },
             getVolume: function() {
                 return volume;
