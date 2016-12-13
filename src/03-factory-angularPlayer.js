@@ -269,9 +269,6 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                     useTrack = tempTrack;
                 }
 
-                console.log(soundManager.soundIDs);
-                console.log(tempTrack);
-
                 var currentTrackKey = this.getIndexByValue(useTrack, this.getCurrentTrack());
                 var nextTrackKey = +currentTrackKey + 1;
                 var nextTrack = useTrack[nextTrackKey];
