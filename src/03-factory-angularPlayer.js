@@ -1,6 +1,6 @@
 ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
     function($rootScope, $log) {
-        
+
         var currentTrack = null,
             repeat = false,
             autoPlay = true,
@@ -8,7 +8,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
             volume = 90,
             trackProgress = 0,
             playlist = [];
-        
+
         return {
             /**
              * Initialize soundmanager,
@@ -76,7 +76,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                             if(autoPlay === true) {
                                 //play next track if autoplay is on
                                 //get your angular app
-                                var elem = angular.element(document.querySelector('[ng-app]'));
+                                var elem = angular.element(document.querySelector('[ng-app],[data-ng-app]'));
                                 //get the injector.
                                 var injector = elem.injector();
                                 //get the service.
