@@ -1,6 +1,6 @@
 ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
     function($rootScope, $log) {
-        
+
         var currentTrack = null,
             repeat = false,
             autoPlay = true,
@@ -8,7 +8,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
             volume = 90,
             trackProgress = 0,
             playlist = [];
-        
+
         return {
             /**
              * Initialize soundmanager,
@@ -150,8 +150,14 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                     return playlist[key];
                 }
             },
-            addToPlaylist: function(track) {
-                playlist.push(track);
+            addToPlaylist: function(track, index) {
+                //if an index is specified, add track at index
+                if(index) {
+                    playlist.splice(index, 0, track);
+                //otherwise add track to the end of playlist
+                } else {
+                    playlist.push(track);
+                }
                 //broadcast playlist
                 $rootScope.$broadcast('player:playlist', playlist);
             },
@@ -174,7 +180,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                     }
                 }
             },
-            addTrack: function(track) {
+            addTrack: function(track, index) {
                 //check if track itself is valid and if its url is playable
                 if (!this.isTrackValid) {
                     return null;
@@ -190,7 +196,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                         url: track.url
                     });
                     //add to playlist
-                    this.addToPlaylist(track);
+                    this.addToPlaylist(track, index);
                 }
                 return track.id;
             },
