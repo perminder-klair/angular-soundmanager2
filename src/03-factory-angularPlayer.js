@@ -278,7 +278,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                     // generate shuffle track list
                     if(shuffle === true && isPlaying === true){
                         tempTrack = angular.copy(soundManager.soundIDs);
-                        tempTrack = (tempTrack).sort(function() { return 0.5 - Math.random() });
+                        tempTrack = (tempTrack).sort(function() { return 0.5 - Math.random(); });
                         $rootScope.$broadcast('music:tempTrack', tempTrack);
                     }
 
@@ -343,13 +343,28 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                 } else {
                     shuffle = true;
                     tempTrack = angular.copy(soundManager.soundIDs);
-                    tempTrack = (tempTrack).sort(function() { return 0.5 - Math.random() });
+                    tempTrack = (tempTrack).sort(function() { return 0.5 - Math.random(); });
                 }
                 $rootScope.$broadcast('music:shuffle', shuffle);
                 $rootScope.$broadcast('music:tempTrack', tempTrack);
             },
             getShuffleStatus: function() {
                 return shuffle;
+            },
+            playShuffle: function(){
+                var trackToPlay = null;
+                shuffle = true;
+                tempTrack = angular.copy(soundManager.soundIDs);
+                tempTrack = (tempTrack).sort(function() { return 0.5 - Math.random(); });
+                $rootScope.$broadcast('music:shuffle', shuffle);
+                $rootScope.$broadcast('music:tempTrack', tempTrack);
+
+                if(tempTrack.length === 0) {
+                    $log.debug('playlist is empty!');
+                    return;
+                }
+                trackToPlay = tempTrack[0];
+                this.initPlayTrack(trackToPlay);
             },
             getVolume: function() {
                 return volume;
