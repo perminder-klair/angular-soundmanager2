@@ -5228,6 +5228,10 @@ ngSoundManager.directive('shuffleMusic', ['angularPlayer', function (angularPlay
                     scope.$apply(function () {
                         scope.shuffle = data;
                     });
+                    
+                    if(!angularPlayer.isPlayingStatus() && scope.shuffle) {
+                        angularPlayer.play();
+                    }
                 });
             }
         };
