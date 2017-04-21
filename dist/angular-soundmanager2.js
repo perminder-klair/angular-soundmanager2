@@ -4684,11 +4684,17 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
 
                 // use shuffle track list if shuffle is true
                 var useTrack = angular.copy(soundManager.soundIDs);
-                if(shuffle === true){                    
-                    useTrack = tempTrack;
+                var currentTrackKey = this.getIndexByValue(useTrack, this.getCurrentTrack());
+
+                if( !this.getRepeatStatus()  && (this.getPlaylist()).length == currentTrackKey+1 ){
+                    $log.debug("Last track");
+                    return null;
                 }
 
-                var currentTrackKey = this.getIndexByValue(useTrack, this.getCurrentTrack());
+                if(shuffle === true){
+                    useTrack = tempTrack;
+                }
+                
                 var nextTrackKey = +currentTrackKey + 1;
                 var nextTrack = useTrack[nextTrackKey];
                 if(typeof nextTrack !== 'undefined') {
