@@ -4683,18 +4683,12 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                 }
 
                 // use shuffle track list if shuffle is true
-                var useTrack = angular.copy(soundManager.soundIDs);
-                var currentTrackKey = this.getIndexByValue(useTrack, this.getCurrentTrack());
-
-                if( !this.getRepeatStatus()  && (this.getPlaylist()).length == currentTrackKey+1 ){
-                    $log.debug("Last track");
-                    return null;
-                }
-
+                var useTrack = angular.copy(soundManager.soundIDs);                
                 if(shuffle === true){
                     useTrack = tempTrack;
                 }
-                
+
+                var currentTrackKey = this.getIndexByValue(useTrack, this.getCurrentTrack());
                 var nextTrackKey = +currentTrackKey + 1;
                 var nextTrack = useTrack[nextTrackKey];
                 if(typeof nextTrack !== 'undefined') {
@@ -4855,6 +4849,18 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
             },
             isPlayingStatus: function() {
                 return isPlaying;
+            },
+            isLastTrack: function() {
+                // use shuffle track list if shuffle is true
+                var useTrack = angular.copy(soundManager.soundIDs);                
+                if(shuffle === true){
+                    useTrack = tempTrack;
+                }
+                var currentTrackKey = this.getIndexByValue(useTrack, this.getCurrentTrack());
+                if(repeat === false && (this.getPlaylist()).length == currentTrackKey+1 ) {
+                    return true;
+                }
+                return false;
             }
         };
     }
@@ -5035,6 +5041,9 @@ ngSoundManager.directive('nextTrack', ['angularPlayer', function (angularPlayer)
             link: function (scope, element, attrs) {
 
                 element.bind('click', function (event) {
+                	if( angularPlayer.isLastTrack() && angularPlayer.isPlayingStatus() ){
+                        return false;
+                    }
                     angularPlayer.nextTrack();
                 });
 
