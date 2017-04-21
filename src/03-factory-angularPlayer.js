@@ -3,6 +3,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
         
         var currentTrack = null,
             repeat = false,
+            repeatTrack = false,
             shuffle = false,
             tempTrack = [],
             autoPlay = true,
@@ -272,7 +273,9 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                 var currentTrackKey = this.getIndexByValue(useTrack, this.getCurrentTrack());
                 var nextTrackKey = +currentTrackKey + 1;
                 var nextTrack = useTrack[nextTrackKey];
-                if(typeof nextTrack !== 'undefined') {
+                if(repeatTrack === true) {
+                    this.playTrack(useTrack[currentTrackKey]);
+                } else if(typeof nextTrack !== 'undefined') {
                     this.playTrack(nextTrack);
                 } else {
                     // generate shuffle track list
@@ -330,11 +333,26 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                     repeat = false;
                 } else {
                     repeat = true;
+                    repeatTrack = false;
+                    $rootScope.$broadcast('music:repeatTrack', repeatTrack);
                 }
                 $rootScope.$broadcast('music:repeat', repeat);
             },
             getRepeatStatus: function() {
                 return repeat;
+            },
+            repeatTrackToggle: function() {
+                if(repeatTrack === true) {
+                    repeatTrack = false;
+                } else {
+                    repeatTrack = true;
+                    repeat = false;
+                    $rootScope.$broadcast('music:repeat', repeat);
+                }
+                $rootScope.$broadcast('music:repeatTrack', repeatTrack);
+            },
+            getRepeatTrackStatus: function() {
+                return repeatTrack;
             },
             shuffleToggle: function() {
                 if(shuffle === true) {
