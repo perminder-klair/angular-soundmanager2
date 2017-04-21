@@ -4422,6 +4422,9 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
         
         var currentTrack = null,
             repeat = false,
+            repeatTrack = false,
+            shuffle = false,
+            tempTrack = [],
             autoPlay = true,
             isPlaying = false,
             volume = 90,
@@ -4620,6 +4623,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                 }
                 //unload from soundManager
                 soundManager.destroySound(song);
+                
                 //remove from playlist
                 playlist.splice(index, 1);
                 //once all done then broadcast
@@ -4678,16 +4682,32 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                     $log.debug("Please click on Play before this action");
                     return null;
                 }
-                var currentTrackKey = this.getIndexByValue(soundManager.soundIDs, this.getCurrentTrack());
+
+                // use shuffle track list if shuffle is true
+                var useTrack = angular.copy(soundManager.soundIDs);                
+                if(shuffle === true){
+                    useTrack = tempTrack;
+                }
+
+                var currentTrackKey = this.getIndexByValue(useTrack, this.getCurrentTrack());
                 var nextTrackKey = +currentTrackKey + 1;
-                var nextTrack = soundManager.soundIDs[nextTrackKey];
-                if(typeof nextTrack !== 'undefined') {
+                var nextTrack = useTrack[nextTrackKey];
+                if(repeatTrack === true) {
+                    this.playTrack(useTrack[currentTrackKey]);
+                } else if(typeof nextTrack !== 'undefined') {
                     this.playTrack(nextTrack);
                 } else {
+                    // generate shuffle track list
+                    if(shuffle === true && isPlaying === true){
+                        tempTrack = angular.copy(soundManager.soundIDs);
+                        tempTrack = (tempTrack).sort(function() { return 0.5 - Math.random(); });
+                        $rootScope.$broadcast('music:tempTrack', tempTrack);
+                    }
+
                     //if no next track found
                     if(repeat === true) {
                         //start first track if repeat is on
-                        this.playTrack(soundManager.soundIDs[0]);
+                        this.playTrack(useTrack[0]);
                     } else {
                         //breadcase not playing anything
                         isPlaying = false;
@@ -4700,9 +4720,16 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                     $log.debug("Please click on Play before this action");
                     return null;
                 }
-                var currentTrackKey = this.getIndexByValue(soundManager.soundIDs, this.getCurrentTrack());
+
+                // use shuffle track list if shuffle is true
+                var useTrack = angular.copy(soundManager.soundIDs);
+                if(shuffle === true){                    
+                    useTrack = tempTrack;
+                }
+
+                var currentTrackKey = this.getIndexByValue(useTrack, this.getCurrentTrack());
                 var prevTrackKey = +currentTrackKey - 1;
-                var prevTrack = soundManager.soundIDs[prevTrackKey];
+                var prevTrack = useTrack[prevTrackKey];
                 if(typeof prevTrack !== 'undefined') {
                     this.playTrack(prevTrack);
                 } else {
@@ -4725,11 +4752,56 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                     repeat = false;
                 } else {
                     repeat = true;
+                    repeatTrack = false;
+                    $rootScope.$broadcast('music:repeatTrack', repeatTrack);
                 }
                 $rootScope.$broadcast('music:repeat', repeat);
             },
             getRepeatStatus: function() {
                 return repeat;
+            },
+            repeatTrackToggle: function() {
+                if(repeatTrack === true) {
+                    repeatTrack = false;
+                } else {
+                    repeatTrack = true;
+                    repeat = false;
+                    $rootScope.$broadcast('music:repeat', repeat);
+                }
+                $rootScope.$broadcast('music:repeatTrack', repeatTrack);
+            },
+            getRepeatTrackStatus: function() {
+                return repeatTrack;
+            },
+            shuffleToggle: function() {
+                if(shuffle === true) {
+                    shuffle = false;
+                    tempTrack = angular.copy(soundManager.soundIDs);
+                } else {
+                    shuffle = true;
+                    tempTrack = angular.copy(soundManager.soundIDs);
+                    tempTrack = (tempTrack).sort(function() { return 0.5 - Math.random(); });
+                }
+                $rootScope.$broadcast('music:shuffle', shuffle);
+                $rootScope.$broadcast('music:tempTrack', tempTrack);
+            },
+            getShuffleStatus: function() {
+                return shuffle;
+            },
+            playShuffle: function(){
+                var trackToPlay = null;
+                shuffle = true;
+                tempTrack = angular.copy(soundManager.soundIDs);
+                tempTrack = (tempTrack).sort(function() { return 0.5 - Math.random(); });
+                $rootScope.$broadcast('music:shuffle', shuffle);
+                $rootScope.$broadcast('music:tempTrack', tempTrack);
+
+                if(tempTrack.length === 0) {
+                    $log.debug('playlist is empty!');
+                    return;
+                }
+                trackToPlay = tempTrack[0];
+                this.initPlayTrack(trackToPlay);
             },
             getVolume: function() {
                 return volume;
@@ -4795,6 +4867,18 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
             },
             isPlayingStatus: function() {
                 return isPlaying;
+            },
+            isLastTrack: function() {
+                // use shuffle track list if shuffle is true
+                var useTrack = angular.copy(soundManager.soundIDs);                
+                if(shuffle === true){
+                    useTrack = tempTrack;
+                }
+                var currentTrackKey = this.getIndexByValue(useTrack, this.getCurrentTrack());
+                if(repeat === false && (this.getPlaylist()).length == currentTrackKey+1 ) {
+                    return true;
+                }
+                return false;
             }
         };
     }
@@ -4975,6 +5059,9 @@ ngSoundManager.directive('nextTrack', ['angularPlayer', function (angularPlayer)
             link: function (scope, element, attrs) {
 
                 element.bind('click', function (event) {
+                	if( angularPlayer.isLastTrack() && angularPlayer.isPlayingStatus() ){
+                        return false;
+                    }
                     angularPlayer.nextTrack();
                 });
 
@@ -5173,3 +5260,56 @@ ngSoundManager.directive('playPauseToggle', ['angularPlayer',
         };
     }
 ]);
+
+
+ngSoundManager.directive('shuffleMusic', ['angularPlayer', function (angularPlayer) {
+        return {
+            restrict: "EA",
+            link: function (scope, element, attrs) {
+
+                element.bind('click', function (event) {
+                    angularPlayer.shuffleToggle();
+                });
+
+                scope.shuffle = angularPlayer.getShuffleStatus();
+                scope.$on('music:shuffle', function (event, data) {
+                    scope.$apply(function () {
+                        scope.shuffle = data;
+                    });
+                });
+            }
+        };
+    }]);
+
+ngSoundManager.directive('shuffleAllMusic', ['angularPlayer', function (angularPlayer) {
+    return {
+        restrict: "EA",
+        link: function (scope, element, attrs) {
+
+            element.bind('click', function (event) {
+                angularPlayer.playShuffle();
+            });
+
+            scope.shuffle = angularPlayer.getShuffleStatus();            
+        }
+    };
+}]);
+
+ngSoundManager.directive('repeatTrack', ['angularPlayer', function (angularPlayer) {
+        return {
+            restrict: "EA",
+            link: function (scope, element, attrs) {
+
+                element.bind('click', function (event) {
+                    angularPlayer.repeatTrackToggle();
+                });
+
+                scope.repeatTrack = angularPlayer.getRepeatTrackStatus();
+                scope.$on('music:repeatTrack', function (event, data) {
+                    scope.$apply(function () {
+                        scope.repeatTrack = data;
+                    });
+                });
+            }
+        };
+    }]);
