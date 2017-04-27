@@ -436,6 +436,21 @@
             }
             return oSound;
         };
+        
+        this.destroyAllSounds = function (_bFromSound) {
+          for(var sID in sm2.sounds) {
+            sm2.sounds[sID]._iO = {};
+            sm2.sounds[sID].stop();
+            sm2.sounds[sID].unload();
+            if(!_bFromSound) {
+                // ignore if being called from SMSound instance
+                sm2.sounds[sID].destruct(true);
+            }
+          }
+          sm2.soundIDs = [];
+          sm2.sounds = {};
+          return true;
+        };
         /**
          * Destroys a SMSound sound object instance.
          *

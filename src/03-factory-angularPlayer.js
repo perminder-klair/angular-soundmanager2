@@ -1,6 +1,6 @@
 ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
     function($rootScope, $log) {
-        
+
         var currentTrack = null,
             repeat = false,
             autoPlay = true,
@@ -8,7 +8,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
             volume = 90,
             trackProgress = 0,
             playlist = [];
-        
+
         return {
             /**
              * Initialize soundmanager,
@@ -138,6 +138,9 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
             getCurrentTrack: function() {
                 return currentTrack;
             },
+            getTrackObject: function(id) {
+              return playlist.filter(function(track){return track.id === id;})[0];
+            },
             currentTrackData: function() {
                 var trackId = this.getCurrentTrack();
                 var currentKey = this.isInArray(playlist, trackId);
@@ -175,13 +178,19 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                 }
             },
             addTrack: function(track) {
-                //check if track itself is valid and if its url is playable
-                if (!this.isTrackValid) {
-                    return null;
-                }
+              this.addTracks([track]);
+              return track.id;
+            },
+            addTracks: function(tracks) {
+              var that = this;
+              //check if track itself is valid and if its url is playable
+              if (!this.isTrackValid) {
+                  return null;
+              }
 
+              tracks.forEach(function (track) {
                 //check if song already does not exists then add to playlist
-                var inArrayKey = this.isInArray(this.getPlaylist(), track.id);
+                var inArrayKey = that.isInArray(that.getPlaylist(), track.id);
                 if(inArrayKey === false) {
                     //$log.debug('song does not exists in playlist');
                     //add to sound manager
@@ -190,9 +199,14 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                         url: track.url
                     });
                     //add to playlist
-                    this.addToPlaylist(track);
+                    playlist.push(track);
                 }
-                return track.id;
+              });
+
+              //broadcast playlist
+              $rootScope.$broadcast('player:playlist', playlist);
+
+              return tracks;
             },
             removeSong: function(song, index) {
                 //if this song is playing stop it
@@ -350,26 +364,24 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                 this.resetProgress();
                 //unload and destroy soundmanager sounds
                 var smIdsLength = soundManager.soundIDs.length;
-                this.asyncLoop({
-                    length: smIdsLength,
-                    functionToLoop: function(loop, i) {
-                        setTimeout(function() {
-                            //custom code
-                            soundManager.destroySound(soundManager.soundIDs[0]);
-                            //custom code
-                            loop();
-                        }, 100);
-                    },
-                    callback: function() {
-                        //callback custom code
-                        $log.debug('All done!');
-                        //clear playlist
-                        playlist = [];
-                        $rootScope.$broadcast('player:playlist', playlist);
-                        callback(true);
-                        //callback custom code
-                    }
-                });
+                soundManager.destroyAllSounds();
+                //callback custom code
+                $log.debug('All done!');
+                //clear playlist
+                playlist = [];
+                $rootScope.$broadcast('player:playlist', playlist);
+                callback(true);
+            },
+            setPlaylist: function(songs, callback) {
+              var that = this;
+              that.clearPlaylist(function () {
+                $log.debug('cleared, ok now clear the current track');
+                that.setCurrentTrack(null);
+                $log.debug('cleared, ok now add to playlist');
+                //add songs to playlist
+                that.addTracks(songs);
+                that.play();
+              });
             },
             resetProgress: function() {
                 trackProgress = 0;
