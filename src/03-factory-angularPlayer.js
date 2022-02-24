@@ -229,7 +229,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                         $log.debug('playlist is empty!');
                         return;
                     }
-                    soundManager.setVolume(soundIDs[0], volume);
+                    soundManager.setVolume(soundManager.soundIDs[0], volume);
                     trackToPlay = soundManager.soundIDs[0];
                     this.initPlayTrack(trackToPlay);
                 } else {
