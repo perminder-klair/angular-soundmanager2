@@ -4419,7 +4419,7 @@ ngSoundManager.filter('humanTime', function () {
 
 ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
     function($rootScope, $log) {
-        
+
         var currentTrack = null,
             repeat = false,
             autoPlay = true,
@@ -4427,7 +4427,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
             volume = 90,
             trackProgress = 0,
             playlist = [];
-        
+
         return {
             /**
              * Initialize soundmanager,
@@ -4608,6 +4608,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                         id: track.id,
                         url: track.url
                     });
+                    soundManager.setVolume(track.id, volume);
                     //add to playlist
                     this.addToPlaylist(track);
                 }
@@ -4647,6 +4648,7 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log',
                         $log.debug('playlist is empty!');
                         return;
                     }
+                    soundManager.setVolume(soundManager.soundIDs[0], volume);
                     trackToPlay = soundManager.soundIDs[0];
                     this.initPlayTrack(trackToPlay);
                 } else {
